@@ -10,6 +10,7 @@ import (
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
+	"github.com/icza/golab/engine"
 )
 
 func init() {
@@ -39,9 +40,14 @@ func (v *View) Loop() {
 	gtx := v.gtx
 
 	var (
-		newGameBtn    = new(widget.Button)
-		labSizeBtn    = new(widget.Button)
-		difficultyBtn = new(widget.Button)
+		newGameBtn = new(widget.Button)
+		diffBtn    = new(widget.Button)
+		labSizeBtn = new(widget.Button)
+	)
+
+	var (
+		diffIdx    = engine.DifficultyDefaultIdx
+		labSizeIdx = engine.DefaultLabSizeIdx
 	)
 
 	for e := range w.Events() {
@@ -49,6 +55,13 @@ func (v *View) Loop() {
 		case system.FrameEvent:
 			log.Println("frame")
 			gtx.Reset(e.Config, e.Size)
+
+			for diffBtn.Clicked(gtx) {
+				diffIdx = (diffIdx + 1) % len(engine.Difficulties)
+			}
+			for labSizeBtn.Clicked(gtx) {
+				labSizeIdx = (labSizeIdx + 1) % len(engine.LabSizes)
+			}
 
 			layout.NW.Layout(gtx, func() {
 				layout.UniformInset(unit.Px(5)).Layout(gtx, func() {
@@ -62,7 +75,7 @@ func (v *View) Loop() {
 							})
 						}),
 						layout.Rigid(func() {
-							th.Button("Medium").Layout(gtx, labSizeBtn)
+							th.Button(engine.Difficulties[diffIdx].String()).Layout(gtx, diffBtn)
 						}),
 						layout.Rigid(func() {
 							layout.Inset{Left: unit.Px(20)}.Layout(gtx, func() {
@@ -70,7 +83,7 @@ func (v *View) Loop() {
 							})
 						}),
 						layout.Rigid(func() {
-							th.Button("Normal").Layout(gtx, difficultyBtn)
+							th.Button(engine.LabSizes[labSizeIdx].String()).Layout(gtx, labSizeBtn)
 						}),
 					)
 				})
