@@ -63,27 +63,23 @@ func (v *View) Loop() {
 				labSizeIdx = (labSizeIdx + 1) % len(engine.LabSizes)
 			}
 
-			layout.NW.Layout(gtx, func() {
+			layout.N.Layout(gtx, func() {
 				layout.UniformInset(unit.Px(5)).Layout(gtx, func() {
 					layout.Flex{Axis: layout.Horizontal, Alignment: layout.Middle}.Layout(gtx,
 						layout.Rigid(func() {
-							th.Button("New game").Layout(gtx, newGameBtn)
-						}),
-						layout.Rigid(func() {
-							layout.Inset{Left: unit.Px(20)}.Layout(gtx, func() {
-								th.Body1("Difficulty:").Layout(gtx)
+							layout.Inset{Left: unit.Px(10), Right: unit.Px(10)}.Layout(gtx, func() {
+								th.Button("New Game").Layout(gtx, newGameBtn)
 							})
 						}),
 						layout.Rigid(func() {
-							th.Button(engine.Difficulties[diffIdx].String()).Layout(gtx, diffBtn)
-						}),
-						layout.Rigid(func() {
-							layout.Inset{Left: unit.Px(20)}.Layout(gtx, func() {
-								th.Body1("Labyrinth size:").Layout(gtx)
+							layout.Inset{Left: unit.Px(10), Right: unit.Px(10)}.Layout(gtx, func() {
+								th.Button("Difficulty: "+engine.Difficulties[diffIdx].String()).Layout(gtx, diffBtn)
 							})
 						}),
 						layout.Rigid(func() {
-							th.Button(engine.LabSizes[labSizeIdx].String()).Layout(gtx, labSizeBtn)
+							layout.Inset{Left: unit.Px(10), Right: unit.Px(10)}.Layout(gtx, func() {
+								th.Button("Lab size: "+engine.LabSizes[labSizeIdx].String()).Layout(gtx, labSizeBtn)
+							})
 						}),
 					)
 				})
