@@ -2,6 +2,7 @@
 package view
 
 import (
+	"image/color"
 	"log"
 
 	"gioui.org/app"
@@ -96,7 +97,9 @@ func (v *View) drawControls() {
 			layout.Flex{Axis: layout.Horizontal, Alignment: layout.Middle}.Layout(gtx,
 				layout.Rigid(func() {
 					layout.Inset{Left: unit.Px(10), Right: unit.Px(10)}.Layout(gtx, func() {
-						th.Button("New Game").Layout(gtx, v.newGameBtn)
+						b := th.Button("New Game")
+						b.Background = color.RGBA{R: 20, G: 130, B: 20, A: 255}
+						b.Layout(gtx, v.newGameBtn)
 					})
 				}),
 				layout.Rigid(v.diffOpt.layout),

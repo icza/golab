@@ -2,6 +2,7 @@ package view
 
 import (
 	"fmt"
+	"image/color"
 	"reflect"
 
 	"gioui.org/layout"
@@ -44,8 +45,10 @@ func (o *options) handleInput() {
 // layout lays out the UI widget
 func (o *options) layout() {
 	layout.Inset{Left: unit.Px(10), Right: unit.Px(10)}.Layout(o.v.gtx, func() {
-		o.v.th.Button(
+		b := o.v.th.Button(
 			fmt.Sprintf("%s: %s", o.title, reflect.ValueOf(o.values).Index(o.idx).Interface()),
-		).Layout(o.v.gtx, o.btn)
+		)
+		b.Background = color.RGBA{R: 100, G: 100, A: 255}
+		b.Layout(o.v.gtx, o.btn)
 	})
 }
