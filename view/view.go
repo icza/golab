@@ -99,15 +99,9 @@ func (v *View) drawControls() {
 						th.Button("New Game").Layout(gtx, v.newGameBtn)
 					})
 				}),
-				layout.Rigid(func() {
-					v.diffOpt.layout()
-				}),
-				layout.Rigid(func() {
-					v.labSizeOpt.layout()
-				}),
-				layout.Rigid(func() {
-					v.speedOpt.layout()
-				}),
+				layout.Rigid(v.diffOpt.layout),
+				layout.Rigid(v.labSizeOpt.layout),
+				layout.Rigid(v.speedOpt.layout),
 			)
 		})
 	})
