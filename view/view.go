@@ -11,7 +11,7 @@ import (
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
-	"github.com/icza/golab/control"
+	"github.com/icza/golab/ctrl"
 )
 
 func init() {
@@ -20,7 +20,7 @@ func init() {
 
 // View displays the game window and handles user input.
 type View struct {
-	engine *control.Engine
+	engine *ctrl.Engine
 	w      *app.Window
 	th     *material.Theme
 	gtx    *layout.Context
@@ -31,14 +31,14 @@ type View struct {
 	diffBtn *widget.Button
 	// Lab size button model
 	labSizeBtn *widget.Button
-	// Selected difficulty index (in control.Difficulties)
+	// Selected difficulty index (in ctrl.Difficulties)
 	diffIdx int
-	// Selected lab size index (in control.LabSizes)
+	// Selected lab size index (in ctrl.LabSizes)
 	labSizeIdx int
 }
 
 // New returns a new View.
-func New(engine *control.Engine, w *app.Window) *View {
+func New(engine *ctrl.Engine, w *app.Window) *View {
 	return &View{
 		engine:     engine,
 		w:          w,
@@ -47,8 +47,8 @@ func New(engine *control.Engine, w *app.Window) *View {
 		newGameBtn: new(widget.Button),
 		diffBtn:    new(widget.Button),
 		labSizeBtn: new(widget.Button),
-		diffIdx:    control.DifficultyDefaultIdx,
-		labSizeIdx: control.DefaultLabSizeIdx,
+		diffIdx:    ctrl.DifficultyDefaultIdx,
+		labSizeIdx: ctrl.DefaultLabSizeIdx,
 	}
 }
 
@@ -75,10 +75,10 @@ func (v *View) drawFrame(e system.FrameEvent) {
 
 	// Handle button clicks
 	for v.diffBtn.Clicked(gtx) {
-		v.diffIdx = (v.diffIdx + 1) % len(control.Difficulties)
+		v.diffIdx = (v.diffIdx + 1) % len(ctrl.Difficulties)
 	}
 	for v.labSizeBtn.Clicked(gtx) {
-		v.labSizeIdx = (v.labSizeIdx + 1) % len(control.LabSizes)
+		v.labSizeIdx = (v.labSizeIdx + 1) % len(ctrl.LabSizes)
 	}
 
 	v.drawControls()
@@ -102,12 +102,12 @@ func (v *View) drawControls() {
 				}),
 				layout.Rigid(func() {
 					layout.Inset{Left: unit.Px(10), Right: unit.Px(10)}.Layout(gtx, func() {
-						th.Button("Difficulty: "+control.Difficulties[v.diffIdx].String()).Layout(gtx, v.diffBtn)
+						th.Button("Difficulty: "+ctrl.Difficulties[v.diffIdx].String()).Layout(gtx, v.diffBtn)
 					})
 				}),
 				layout.Rigid(func() {
 					layout.Inset{Left: unit.Px(10), Right: unit.Px(10)}.Layout(gtx, func() {
-						th.Button("Lab size: "+control.LabSizes[v.labSizeIdx].String()).Layout(gtx, v.labSizeBtn)
+						th.Button("Lab size: "+ctrl.LabSizes[v.labSizeIdx].String()).Layout(gtx, v.labSizeBtn)
 					})
 				}),
 			)
@@ -117,5 +117,9 @@ func (v *View) drawControls() {
 
 // drawLab draws the labyrinth.
 func (v *View) drawLab() {
+	m := v.engine.Model
+	m.Mu.RLock()
+	defer m.Mu.RUnlock()
+
 	// TODO
 }
