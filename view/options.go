@@ -42,11 +42,16 @@ func (o *options) handleInput() {
 	}
 }
 
+// selected returns the selected item.
+func (o *options) selected() interface{} {
+	return reflect.ValueOf(o.values).Index(o.idx).Interface()
+}
+
 // layout lays out the UI widget
 func (o *options) layout() {
 	layout.Inset{Left: unit.Px(10), Right: unit.Px(10)}.Layout(o.v.gtx, func() {
 		b := o.v.th.Button(
-			fmt.Sprintf("%s: %s", o.title, reflect.ValueOf(o.values).Index(o.idx).Interface()),
+			fmt.Sprintf("%s: %s", o.title, o.selected()),
 		)
 		b.Background = color.RGBA{R: 100, G: 100, A: 255}
 		b.Layout(o.v.gtx, o.btn)

@@ -23,13 +23,13 @@ var LabSizes = []*LabSize{
 	&LabSize{Name: "XL", rows: 99, cols: 99},
 }
 
-// DefaultLabSizeIdx is the index of the default lab size  in LabSizes.
-var DefaultLabSizeIdx int
+// LabSizeDefaultIdx is the index of the default lab size  in LabSizes.
+var LabSizeDefaultIdx int
 
 func init() {
 	for i, l := range LabSizes {
 		if l.Default {
-			DefaultLabSizeIdx = i
+			LabSizeDefaultIdx = i
 			break
 		}
 	}

@@ -49,7 +49,7 @@ func New(engine *ctrl.Engine, w *app.Window) *View {
 	}
 
 	v.diffOpt = newOptions(v, "Difficulty", ctrl.Difficulties, ctrl.DifficultyDefaultIdx)
-	v.labSizeOpt = newOptions(v, "Lab size", ctrl.LabSizes, ctrl.DefaultLabSizeIdx)
+	v.labSizeOpt = newOptions(v, "Lab size", ctrl.LabSizes, ctrl.LabSizeDefaultIdx)
 	v.speedOpt = newOptions(v, "Speed", ctrl.Speeds, ctrl.SpeedDefaultIdx)
 
 	return v
@@ -70,13 +70,18 @@ func (v *View) Loop() {
 
 // drawFrame draws a frame of the window.
 func (v *View) drawFrame(e system.FrameEvent) {
-	log.Println("frame")
-
 	gtx := v.gtx
 
 	gtx.Reset(e.Config, e.Size)
 
 	// Handle button clicks
+	for v.newGameBtn.Clicked(v.gtx) {
+		v.engine.NewGame(ctrl.NewGameConfig{
+			Difficulty: v.diffOpt.selected().(*ctrl.Difficulty),
+			LabSize:    v.labSizeOpt.selected().(*ctrl.LabSize),
+			Speed:      v.speedOpt.selected().(*ctrl.Speed),
+		})
+	}
 	v.diffOpt.handleInput()
 	v.labSizeOpt.handleInput()
 	v.speedOpt.handleInput()
