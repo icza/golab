@@ -27,35 +27,31 @@ type View struct {
 
 	// New Game button model
 	newGameBtn *widget.Button
-	// Difficulty button model
-	diffBtn *widget.Button
-	// Lab size button model
-	labSizeBtn *widget.Button
-	// Speed button model
-	speedBtn *widget.Button
-	// Selected difficulty index (in ctrl.Difficulties)
-	diffIdx int
-	// Selected lab size index (in ctrl.LabSizes)
-	labSizeIdx int
-	// Selected speed index (in ctrl.Speeds)
-	speedIdx int
+
+	// Difficulty options
+	diffOpt *options
+	// Lab size options
+	labSizeOpt *options
+	// Speed options
+	speedOpt *options
 }
 
 // New returns a new View.
 func New(engine *ctrl.Engine, w *app.Window) *View {
-	return &View{
+
+	v := &View{
 		engine:     engine,
 		w:          w,
 		th:         material.NewTheme(),
 		gtx:        layout.NewContext((w.Queue())),
 		newGameBtn: new(widget.Button),
-		diffBtn:    new(widget.Button),
-		labSizeBtn: new(widget.Button),
-		speedBtn:   new(widget.Button),
-		diffIdx:    ctrl.DifficultyDefaultIdx,
-		labSizeIdx: ctrl.DefaultLabSizeIdx,
-		speedIdx:   ctrl.SpeedDefaultIdx,
 	}
+
+	v.diffOpt = newOptions(v, "Difficulty", ctrl.Difficulties, ctrl.DifficultyDefaultIdx)
+	v.labSizeOpt = newOptions(v, "Lab size", ctrl.LabSizes, ctrl.DefaultLabSizeIdx)
+	v.speedOpt = newOptions(v, "Speed", ctrl.Speeds, ctrl.SpeedDefaultIdx)
+
+	return v
 }
 
 // Loop starts handing user input and frame redraws.
@@ -80,15 +76,9 @@ func (v *View) drawFrame(e system.FrameEvent) {
 	gtx.Reset(e.Config, e.Size)
 
 	// Handle button clicks
-	for v.diffBtn.Clicked(gtx) {
-		v.diffIdx = (v.diffIdx + 1) % len(ctrl.Difficulties)
-	}
-	for v.labSizeBtn.Clicked(gtx) {
-		v.labSizeIdx = (v.labSizeIdx + 1) % len(ctrl.LabSizes)
-	}
-	for v.speedBtn.Clicked(gtx) {
-		v.speedIdx = (v.speedIdx + 1) % len(ctrl.Speeds)
-	}
+	v.diffOpt.handleInput()
+	v.labSizeOpt.handleInput()
+	v.speedOpt.handleInput()
 
 	v.drawControls()
 	v.drawLab()
@@ -110,19 +100,13 @@ func (v *View) drawControls() {
 					})
 				}),
 				layout.Rigid(func() {
-					layout.Inset{Left: unit.Px(10), Right: unit.Px(10)}.Layout(gtx, func() {
-						th.Button("Difficulty: "+ctrl.Difficulties[v.diffIdx].String()).Layout(gtx, v.diffBtn)
-					})
+					v.diffOpt.layout()
 				}),
 				layout.Rigid(func() {
-					layout.Inset{Left: unit.Px(10), Right: unit.Px(10)}.Layout(gtx, func() {
-						th.Button("Lab size: "+ctrl.LabSizes[v.labSizeIdx].String()).Layout(gtx, v.labSizeBtn)
-					})
+					v.labSizeOpt.layout()
 				}),
 				layout.Rigid(func() {
-					layout.Inset{Left: unit.Px(10), Right: unit.Px(10)}.Layout(gtx, func() {
-						th.Button("Speed: "+ctrl.Speeds[v.speedIdx].String()).Layout(gtx, v.speedBtn)
-					})
+					v.speedOpt.layout()
 				}),
 			)
 		})

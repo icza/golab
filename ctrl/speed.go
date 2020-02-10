@@ -15,7 +15,7 @@ type Speed struct {
 }
 
 func (s *Speed) String() string {
-	fps := time.Second / s.loopDelay
+	fps := (time.Second + s.loopDelay/2) / s.loopDelay // add half to make it round up from half
 	return fmt.Sprintf("%s (%d FPS)", s.Name, fps)
 }
 
