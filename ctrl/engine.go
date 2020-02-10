@@ -41,8 +41,11 @@ func (e *Engine) NewGame(cfg NewGameConfig) {
 // This function returns only if the user closes the app.
 func (e *Engine) Loop() {
 	for {
+		e.Model.Lock()
+
 		e.processCmds()
 
+		e.Model.Unlock()
 		// TODO
 
 		time.Sleep(time.Millisecond)
@@ -52,15 +55,31 @@ func (e *Engine) Loop() {
 func (e *Engine) processCmds() {
 	for {
 		select {
+
 		case cmd := <-e.cmdChan:
-			switch x := cmd.(type) {
+			switch cmd := cmd.(type) {
 			case *NewGameConfig:
-				// TODO
+				e.initNewGame(cmd)
 			default:
-				log.Printf("Unhandled cmd type: %T", x)
+				log.Printf("Unhandled cmd type: %T", cmd)
 			}
+
 		default:
-			return
+			return // No more commands queued
 		}
 	}
+}
+
+// initNewGame initializes a new game.
+func (e *Engine) initNewGame(cfg *NewGameConfig) {
+	m := e.Model
+
+	m.Counter++
+
+	m.Lab = make([][]model.Block, cfg.LabSize.rows)
+	for row := range m.Lab {
+		m.Lab[row] = make([]model.Block, cfg.LabSize.cols)
+	}
+
+	// TODO
 }

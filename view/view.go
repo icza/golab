@@ -39,7 +39,6 @@ type View struct {
 
 // New returns a new View.
 func New(engine *ctrl.Engine, w *app.Window) *View {
-
 	v := &View{
 		engine:     engine,
 		w:          w,
@@ -118,8 +117,8 @@ func (v *View) drawControls() {
 // drawLab draws the labyrinth.
 func (v *View) drawLab() {
 	m := v.engine.Model
-	m.Mu.RLock()
-	defer m.Mu.RUnlock()
+	m.RLock()
+	defer m.RUnlock()
 
 	// TODO
 }
