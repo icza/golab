@@ -10,7 +10,7 @@ import (
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
-	"github.com/icza/golab/engine"
+	"github.com/icza/golab/control"
 )
 
 func init() {
@@ -19,9 +19,10 @@ func init() {
 
 // View displays the game window and handles user input.
 type View struct {
-	w   *app.Window
-	th  *material.Theme
-	gtx *layout.Context
+	engine *control.Engine
+	w      *app.Window
+	th     *material.Theme
+	gtx    *layout.Context
 
 	// New Game button model
 	newGameBtn *widget.Button
@@ -29,23 +30,24 @@ type View struct {
 	diffBtn *widget.Button
 	// Lab size button model
 	labSizeBtn *widget.Button
-	// Selected difficulty index (in engine.Difficulties)
+	// Selected difficulty index (in control.Difficulties)
 	diffIdx int
-	// Selected lab size index (in engine.LabSizes)
+	// Selected lab size index (in control.LabSizes)
 	labSizeIdx int
 }
 
 // New returns a new View.
-func New(w *app.Window) *View {
+func New(engine *control.Engine, w *app.Window) *View {
 	return &View{
+		engine:     engine,
 		w:          w,
 		th:         material.NewTheme(),
 		gtx:        layout.NewContext((w.Queue())),
 		newGameBtn: new(widget.Button),
 		diffBtn:    new(widget.Button),
 		labSizeBtn: new(widget.Button),
-		diffIdx:    engine.DifficultyDefaultIdx,
-		labSizeIdx: engine.DefaultLabSizeIdx,
+		diffIdx:    control.DifficultyDefaultIdx,
+		labSizeIdx: control.DefaultLabSizeIdx,
 	}
 }
 
@@ -72,10 +74,10 @@ func (v *View) drawFrame(e system.FrameEvent) {
 
 	// Handle button clicks
 	for v.diffBtn.Clicked(gtx) {
-		v.diffIdx = (v.diffIdx + 1) % len(engine.Difficulties)
+		v.diffIdx = (v.diffIdx + 1) % len(control.Difficulties)
 	}
 	for v.labSizeBtn.Clicked(gtx) {
-		v.labSizeIdx = (v.labSizeIdx + 1) % len(engine.LabSizes)
+		v.labSizeIdx = (v.labSizeIdx + 1) % len(control.LabSizes)
 	}
 
 	v.drawControls()
@@ -99,12 +101,12 @@ func (v *View) drawControls() {
 				}),
 				layout.Rigid(func() {
 					layout.Inset{Left: unit.Px(10), Right: unit.Px(10)}.Layout(gtx, func() {
-						th.Button("Difficulty: "+engine.Difficulties[v.diffIdx].String()).Layout(gtx, v.diffBtn)
+						th.Button("Difficulty: "+control.Difficulties[v.diffIdx].String()).Layout(gtx, v.diffBtn)
 					})
 				}),
 				layout.Rigid(func() {
 					layout.Inset{Left: unit.Px(10), Right: unit.Px(10)}.Layout(gtx, func() {
-						th.Button("Lab size: "+engine.LabSizes[v.labSizeIdx].String()).Layout(gtx, v.labSizeBtn)
+						th.Button("Lab size: "+control.LabSizes[v.labSizeIdx].String()).Layout(gtx, v.labSizeBtn)
 					})
 				}),
 			)

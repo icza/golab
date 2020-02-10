@@ -1,4 +1,4 @@
-package engine
+package control
 
 // Difficulty of the game.
 type Difficulty struct {

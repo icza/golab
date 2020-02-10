@@ -1,10 +1,10 @@
-package engine
+package control
 
 // Engine calculates and controls the game.
 type Engine struct {
 }
 
-// New returns a new Engine.
-func New() *Engine {
+// NewEngine returns a new Engine.
+func NewEngine() *Engine {
 	return &Engine{}
 }
