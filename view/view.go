@@ -49,7 +49,8 @@ func New(w *app.Window) *View {
 	}
 }
 
-// Loop starts handing user input. This function only returns if the user closes the app.
+// Loop starts handing user input and frame redraws.
+// This function returns only if the user closes the app.
 func (v *View) Loop() {
 	for e := range v.w.Events() {
 		switch e := e.(type) {
@@ -65,17 +66,28 @@ func (v *View) Loop() {
 func (v *View) drawFrame(e system.FrameEvent) {
 	log.Println("frame")
 
-	th := v.th
 	gtx := v.gtx
 
 	gtx.Reset(e.Config, e.Size)
 
+	// Handle button clicks
 	for v.diffBtn.Clicked(gtx) {
 		v.diffIdx = (v.diffIdx + 1) % len(engine.Difficulties)
 	}
 	for v.labSizeBtn.Clicked(gtx) {
 		v.labSizeIdx = (v.labSizeIdx + 1) % len(engine.LabSizes)
 	}
+
+	v.drawControls()
+	v.drawLab()
+
+	e.Frame(gtx.Ops)
+}
+
+// drawControls draws the control and setup widgets.
+func (v *View) drawControls() {
+	th := v.th
+	gtx := v.gtx
 
 	layout.N.Layout(gtx, func() {
 		layout.UniformInset(unit.Px(5)).Layout(gtx, func() {
@@ -98,6 +110,9 @@ func (v *View) drawFrame(e system.FrameEvent) {
 			)
 		})
 	})
+}
 
-	e.Frame(gtx.Ops)
+// drawLab draws the labyrinth.
+func (v *View) drawLab() {
+	// TODO
 }
