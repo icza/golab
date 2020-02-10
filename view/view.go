@@ -1,3 +1,4 @@
+// Package view is the view of the game. It handles user input and presents the game to the user.
 package view
 
 import (
