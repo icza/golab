@@ -5,22 +5,22 @@ import "fmt"
 // LabSize difines choosable labyrinth sizes..
 type LabSize struct {
 	Name    string
-	Rows    int // Must be odd
-	Cols    int // Must be odd
+	rows    int // Must be odd
+	cols    int // Must be odd
 	Default bool
 }
 
 func (l *LabSize) String() string {
-	return fmt.Sprintf("%s (%dx%d)", l.Name, l.Rows, l.Cols)
+	return fmt.Sprintf("%s (%dx%d)", l.Name, l.rows, l.cols)
 }
 
 // LabSizes is a slice of all, ordered lab sizes.
 var LabSizes = []*LabSize{
-	&LabSize{Name: "XS", Rows: 9, Cols: 9},
-	&LabSize{Name: "S", Rows: 15, Cols: 15},
-	&LabSize{Name: "M", Rows: 33, Cols: 33, Default: true},
-	&LabSize{Name: "L", Rows: 51, Cols: 51},
-	&LabSize{Name: "XL", Rows: 99, Cols: 99},
+	&LabSize{Name: "XS", rows: 9, cols: 9},
+	&LabSize{Name: "S", rows: 15, cols: 15},
+	&LabSize{Name: "M", rows: 33, cols: 33, Default: true},
+	&LabSize{Name: "L", rows: 51, cols: 51},
+	&LabSize{Name: "XL", rows: 99, cols: 99},
 }
 
 // DefaultLabSizeIdx is the index of the default lab size  in LabSizes.

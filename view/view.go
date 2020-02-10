@@ -31,10 +31,14 @@ type View struct {
 	diffBtn *widget.Button
 	// Lab size button model
 	labSizeBtn *widget.Button
+	// Speed button model
+	speedBtn *widget.Button
 	// Selected difficulty index (in ctrl.Difficulties)
 	diffIdx int
 	// Selected lab size index (in ctrl.LabSizes)
 	labSizeIdx int
+	// Selected speed index (in ctrl.Speeds)
+	speedIdx int
 }
 
 // New returns a new View.
@@ -47,8 +51,10 @@ func New(engine *ctrl.Engine, w *app.Window) *View {
 		newGameBtn: new(widget.Button),
 		diffBtn:    new(widget.Button),
 		labSizeBtn: new(widget.Button),
+		speedBtn:   new(widget.Button),
 		diffIdx:    ctrl.DifficultyDefaultIdx,
 		labSizeIdx: ctrl.DefaultLabSizeIdx,
+		speedIdx:   ctrl.SpeedDefaultIdx,
 	}
 }
 
@@ -80,6 +86,9 @@ func (v *View) drawFrame(e system.FrameEvent) {
 	for v.labSizeBtn.Clicked(gtx) {
 		v.labSizeIdx = (v.labSizeIdx + 1) % len(ctrl.LabSizes)
 	}
+	for v.speedBtn.Clicked(gtx) {
+		v.speedIdx = (v.speedIdx + 1) % len(ctrl.Speeds)
+	}
 
 	v.drawControls()
 	v.drawLab()
@@ -108,6 +117,11 @@ func (v *View) drawControls() {
 				layout.Rigid(func() {
 					layout.Inset{Left: unit.Px(10), Right: unit.Px(10)}.Layout(gtx, func() {
 						th.Button("Lab size: "+ctrl.LabSizes[v.labSizeIdx].String()).Layout(gtx, v.labSizeBtn)
+					})
+				}),
+				layout.Rigid(func() {
+					layout.Inset{Left: unit.Px(10), Right: unit.Px(10)}.Layout(gtx, func() {
+						th.Button("Speed: "+ctrl.Speeds[v.speedIdx].String()).Layout(gtx, v.speedBtn)
 					})
 				}),
 			)
