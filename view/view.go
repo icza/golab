@@ -21,6 +21,16 @@ import (
 	"github.com/icza/golab/ctrl"
 )
 
+const (
+	controlsHeight = 50
+	viewWidth      = 700
+	viewHeight     = 700
+	// WindowWidth is the suggested window width
+	WindowWidth = viewWidth
+	// WindowHeight is the suggested window height
+	WindowHeight = controlsHeight + viewHeight
+)
+
 func init() {
 	gofont.Register()
 }
@@ -136,21 +146,22 @@ func (v *View) drawLab() {
 	stack.Push(gtx.Ops)
 	defer stack.Pop()
 
-	clip.Rect{Rect: f32.Rectangle{Max: f32.Point{X: 700, Y: 700}}}.Op(gtx.Ops).Add(gtx.Ops)
-
-	// TODO
+	// Center lab:
+	op.TransformOp{}.Offset(f32.Point{
+		X: float32((gtx.Constraints.Width.Max - viewWidth) / 2),
+		Y: controlsHeight,
+	}).Add(gtx.Ops)
+	clip.Rect{Rect: f32.Rectangle{Max: f32.Point{X: viewHeight, Y: viewHeight}}}.Op(gtx.Ops).Add(gtx.Ops)
 
 	// First the blocks:
-
 	v.ensureLabImgOp()
-	layout.Center.Layout(gtx, func() {
-		img := th.Image(v.labImgOp)
-		img.Scale = 1
-		img.Layout(gtx)
-	})
+	img := th.Image(v.labImgOp)
+	img.Scale = 1
+	img.Layout(gtx)
 
-	paint.ColorOp{Color: color.RGBA{R: 200, G: 200, B: 200, A: 255}}.Add(gtx.Ops)
-	paint.PaintOp{Rect: f32.Rectangle{Max: f32.Point{X: float32(200), Y: float32(200)}}}.Add(gtx.Ops)
+	// Now objects in the lab:
+
+	// TODO
 }
 
 // ensureLabImgOp ensures labImgOp is up-to-date
