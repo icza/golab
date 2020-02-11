@@ -131,8 +131,8 @@ func (e *Engine) initNewGame(cfg *GameConfig) {
 		for gr, gc := row, col; (row-gr)*(row-gr) <= 16 && (col-gc)*(col-gc) <= 16; row, col = rPassPos(0, m.Rows), rPassPos(0, m.Cols) {
 		}
 
-		bd.Pos.X = float64(col*BlockSize + BlockSize/2)
-		bd.Pos.Y = float64(row*BlockSize + BlockSize/2)
+		bd.Pos.X = float32(col*BlockSize + BlockSize/2)
+		bd.Pos.Y = float32(row*BlockSize + BlockSize/2)
 
 		bd.TargetPos.X, bd.TargetPos.Y = int(bd.Pos.X), int(bd.Pos.Y)
 	}

@@ -46,7 +46,7 @@ const (
 type MovingObj struct {
 	// The position in the labyrinth in pixel coordinates
 	Pos struct {
-		X, Y float64
+		X, Y float32
 	}
 
 	// Direction this object is facing to
@@ -60,14 +60,14 @@ type MovingObj struct {
 type Dir int
 
 const (
-	// DirDown .
-	DirDown = iota
-	// DirUp .
-	DirUp
 	// DirRight .
-	DirRight
+	DirRight = iota
 	// DirLeft .
 	DirLeft
+	// DirUp .
+	DirUp
+	// DirDown .
+	DirDown
 
 	// DirCount is not a valid direction: just to tell how many directions there are
 	DirCount

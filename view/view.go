@@ -52,6 +52,14 @@ type View struct {
 	// Speed options
 	speedOpt *options
 
+	// "static" imageOps
+	imgOpGophers  []paint.ImageOp
+	imgOpDead     paint.ImageOp
+	imgOpBulldogs []paint.ImageOp
+	imgOpMarker   paint.ImageOp
+	imgOpExit     paint.ImageOp
+	imgOpWon      paint.ImageOp
+
 	// gameCounter for the cached data
 	gameCounter int
 	// cached ImageOp of the whole labyrinth (only the blocks)
@@ -61,11 +69,22 @@ type View struct {
 // New returns a new View.
 func New(engine *ctrl.Engine, w *app.Window) *View {
 	v := &View{
-		engine:     engine,
-		w:          w,
-		th:         material.NewTheme(),
-		gtx:        layout.NewContext((w.Queue())),
-		newGameBtn: new(widget.Button),
+		engine:      engine,
+		w:           w,
+		th:          material.NewTheme(),
+		gtx:         layout.NewContext((w.Queue())),
+		newGameBtn:  new(widget.Button),
+		imgOpDead:   paint.NewImageOp(imgDead),
+		imgOpMarker: paint.NewImageOp(imgMarker),
+		imgOpExit:   paint.NewImageOp(imgExit),
+		imgOpWon:    paint.NewImageOp(imgWon),
+	}
+
+	for _, img := range imgGophers {
+		v.imgOpGophers = append(v.imgOpGophers, paint.NewImageOp(img))
+	}
+	for _, img := range imgBulldogs {
+		v.imgOpBulldogs = append(v.imgOpBulldogs, paint.NewImageOp(img))
 	}
 
 	v.diffOpt = newOptions(v, "Difficulty", ctrl.Difficulties, ctrl.DifficultyDefaultIdx)
@@ -140,7 +159,7 @@ func (v *View) drawLab() {
 	m.RLock()
 	defer m.RUnlock()
 
-	th, gtx := v.th, v.gtx
+	gtx := v.gtx
 
 	var stack op.StackOp
 	stack.Push(gtx.Ops)
@@ -165,13 +184,31 @@ func (v *View) drawLab() {
 
 	// First the blocks:
 	v.ensureLabImgOp()
-	img := th.Image(v.labImgOp)
-	img.Scale = 1
-	img.Layout(gtx)
+	v.drawImg(v.labImgOp, 0, 0)
 
 	// Now objects in the lab:
+	// Gopher:
+	v.drawImg(v.imgOpGophers[m.Gopher.Dir], m.Gopher.Pos.X-ctrl.BlockSize/2, m.Gopher.Pos.Y-ctrl.BlockSize/2)
+	// Bulldogs:
+	for _, bd := range m.Bulldogs {
+		v.drawImg(v.imgOpBulldogs[bd.Dir], bd.Pos.X-ctrl.BlockSize/2, bd.Pos.Y-ctrl.BlockSize/2)
+	}
 
 	// TODO
+}
+
+// drawImg draws the given image to the given position.
+func (v *View) drawImg(iop paint.ImageOp, x, y float32) {
+	var stack op.StackOp
+	stack.Push(v.gtx.Ops)
+
+	op.TransformOp{}.Offset(f32.Point{X: x, Y: y}).Add(v.gtx.Ops)
+
+	img := v.th.Image(iop)
+	img.Scale = 1
+	img.Layout(v.gtx)
+
+	stack.Pop()
 }
 
 // ensureLabImgOp ensures labImgOp is up-to-date
