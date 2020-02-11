@@ -28,16 +28,24 @@ type Engine struct {
 
 	// command channel to control the engine from other goroutines.
 	cmdChan chan interface{}
+
+	// invalidate is called by the engine to request a new view frame.
+	invalidate func()
+
+	// Current game config
+	cfg *GameConfig
 }
 
 // NewEngine returns a new Engine.
-func NewEngine() *Engine {
+// invalidate is a func which will be called by the engine to request a new view frame.
+func NewEngine(invalidate func()) *Engine {
 	e := &Engine{
-		Model:   &model.Model{},
-		cmdChan: make(chan interface{}, 10),
+		Model:      &model.Model{},
+		cmdChan:    make(chan interface{}, 10),
+		invalidate: invalidate,
 	}
 
-	e.NewGame(NewGameConfig{
+	e.initNewGame(&GameConfig{
 		Difficulty: Difficulties[DifficultyDefaultIdx],
 		LabSize:    LabSizes[LabSizeDefaultIdx],
 		Speed:      Speeds[SpeedDefaultIdx],
@@ -47,7 +55,7 @@ func NewEngine() *Engine {
 }
 
 // NewGame enqueues a new game command with the given config.
-func (e *Engine) NewGame(cfg NewGameConfig) {
+func (e *Engine) NewGame(cfg GameConfig) {
 	e.cmdChan <- &cfg
 }
 
@@ -62,7 +70,9 @@ func (e *Engine) Loop() {
 		e.Model.Unlock()
 		// TODO
 
-		time.Sleep(time.Millisecond)
+		e.invalidate()
+
+		time.Sleep(e.cfg.Speed.loopDelay)
 	}
 }
 
@@ -72,7 +82,7 @@ func (e *Engine) processCmds() {
 
 		case cmd := <-e.cmdChan:
 			switch cmd := cmd.(type) {
-			case *NewGameConfig:
+			case *GameConfig:
 				e.initNewGame(cmd)
 			default:
 				log.Printf("Unhandled cmd type: %T", cmd)
@@ -85,16 +95,18 @@ func (e *Engine) processCmds() {
 }
 
 // initNewGame initializes a new game.
-func (e *Engine) initNewGame(cfg *NewGameConfig) {
+func (e *Engine) initNewGame(cfg *GameConfig) {
+	e.cfg = cfg
+
 	m := e.Model
 
 	m.Counter++
 
 	// Init the labyrinth
-	rows, cols := cfg.LabSize.rows, cfg.LabSize.cols
-	m.Lab = make([][]model.Block, rows)
+	m.Rows, m.Cols = cfg.LabSize.rows, cfg.LabSize.cols
+	m.Lab = make([][]model.Block, m.Rows)
 	for row := range m.Lab {
-		m.Lab[row] = make([]model.Block, cols)
+		m.Lab[row] = make([]model.Block, m.Cols)
 	}
 	generateLab(m.Lab)
 
@@ -107,7 +119,7 @@ func (e *Engine) initNewGame(cfg *NewGameConfig) {
 	m.Gopher.TargetPos.Y = int(m.Gopher.Pos.Y)
 
 	// Init bulldogs
-	numBulldogs := int(float64(rows*cols) * cfg.Difficulty.bulldogDensity / 1000)
+	numBulldogs := int(float64(m.Rows*m.Cols) * cfg.Difficulty.bulldogDensity / 1000)
 	m.Bulldogs = make([]*model.MovingObj, numBulldogs)
 	for i := range m.Bulldogs {
 		bd := new(model.MovingObj)
@@ -116,7 +128,7 @@ func (e *Engine) initNewGame(cfg *NewGameConfig) {
 		// Place bulldog at a random position
 		var row, col = int(m.Gopher.Pos.Y) / BlockSize, int(m.Gopher.Pos.X) / BlockSize
 		// Give some space to Gopher: do not generate Bulldogs too close:
-		for gr, gc := row, col; (row-gr)*(row-gr) <= 16 && (col-gc)*(col-gc) <= 16; row, col = rPassPos(0, rows), rPassPos(0, cols) {
+		for gr, gc := row, col; (row-gr)*(row-gr) <= 16 && (col-gc)*(col-gc) <= 16; row, col = rPassPos(0, m.Rows), rPassPos(0, m.Cols) {
 		}
 
 		bd.Pos.X = float64(col*BlockSize + BlockSize/2)

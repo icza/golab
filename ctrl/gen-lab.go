@@ -20,6 +20,8 @@ func generateLab(lab [][]model.Block) {
 		lab[0][col] = model.BlockWall
 		lab[rows-1][col] = model.BlockWall
 	}
+
+	genLabArea(lab, 0, 0, rows-1, cols-1)
 }
 
 // genLabArea generates a random labyrinth inside the specified area, borders exclusive.

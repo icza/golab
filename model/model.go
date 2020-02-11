@@ -16,6 +16,9 @@ type Model struct {
 	// Can be used to invalidate caches when its value changes.
 	Counter int
 
+	// Size of the labyrinth in blocks.
+	Rows, Cols int
+
 	// Blocks of the lab. First indexed by row, then by column.
 	Lab [][]Block
 
@@ -34,6 +37,9 @@ const (
 	BlockEmpty = iota
 	// BlockWall designates an unpassable wall.
 	BlockWall
+
+	// BlockCount is not a valid block: just to tell how many blocks there are
+	BlockCount
 )
 
 // MovingObj describes moving objects in the labyrinth.

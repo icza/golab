@@ -28,11 +28,8 @@ var imgDead *image.RGBA
 // imgBulldog holds images of a Bulldog for each direction, each has zero Min point
 var imgBulldogs = make([]*image.RGBA, model.DirCount)
 
-// imgBlockWall is the image of the wall block
-var imgBlockWall *image.RGBA
-
-// imgBlockEmpty is the image of the empty block
-var imgBlockEmpty = image.NewUniform(color.RGBA{A: 0xff})
+// imgBlocks holds images of labyrinth blocks for each type, each has zero Min point
+var imgBlocks = make([]image.Image, model.BlockCount)
 
 // imgMarker is the image of the path marker
 var imgMarker *image.RGBA
@@ -51,7 +48,8 @@ func init() {
 		imgBulldogs[dir] = loadImg(fmt.Sprintf("bulldog-%s.png", dir), true)
 	}
 
-	imgBlockWall = loadImg("wall.png", true)
+	imgBlocks[model.BlockEmpty] = image.NewUniform(color.RGBA{A: 0xff})
+	imgBlocks[model.BlockWall] = loadImg("wall.png", true)
 	imgDead = loadImg("gopher-dead.png", true)
 	imgExit = loadImg("door.png", true)
 

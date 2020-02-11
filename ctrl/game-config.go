@@ -1,7 +1,7 @@
 package ctrl
 
-// NewGameConfig holds config to start a new game.
-type NewGameConfig struct {
+// GameConfig holds config to start a new game.
+type GameConfig struct {
 	Difficulty *Difficulty
 	LabSize    *LabSize
 	Speed      *Speed

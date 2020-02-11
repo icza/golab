@@ -8,11 +8,11 @@ import (
 )
 
 func main() {
-	engine := ctrl.NewEngine()
-	go engine.Loop()
-
 	go func() {
 		w := app.NewWindow(app.Title("Gopher's Labyrinth"), app.Size(unit.Px(700), unit.Px(700)))
+
+		engine := ctrl.NewEngine(w.Invalidate)
+		go engine.Loop()
 
 		v := view.New(engine, w)
 		v.Loop()
