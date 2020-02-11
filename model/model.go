@@ -1,7 +1,10 @@
 // Package model contains types modeling the game.
 package model
 
-import "sync"
+import (
+	"image"
+	"sync"
+)
 
 // Model is the model of the game.
 type Model struct {
@@ -14,6 +17,12 @@ type Model struct {
 
 	// Blocks of the lab. First indexed by row, then by column.
 	Lab [][]Block
+
+	// Our well-beloved hero Gopher
+	Gopher *MovingObj
+
+	// The ancient enemies of Gopher: the bloodthirsty Bulldogs.
+	Bulldogs []*MovingObj
 }
 
 // Block is a square unit of the Labyrinth
@@ -24,4 +33,30 @@ const (
 	BlockEmpty = iota
 	// BlockWall designates an unpassable wall.
 	BlockWall
+)
+
+// MovingObj describes moving objects in the labyrinth.
+type MovingObj struct {
+	// Position in pixel coordinates.
+	PosX, PosY float64
+
+	// Direction this object is facing to
+	Dir Dir
+
+	// Target position this object is moving to
+	TargetPos image.Point
+}
+
+// Dir represents directions
+type Dir int
+
+const (
+	// DirDown .
+	DirDown = iota
+	// DirUp .
+	DirUp
+	// DirRight .
+	DirRight
+	// DirLeft .
+	DirLeft
 )

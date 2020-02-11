@@ -1,12 +1,21 @@
 // Package ctrl contains the game logic.
+//
+// The engine's Loop() method should be launched as a goroutine,
+// and it can be controlled with opaque commands safely from other
+// goroutines.
 package ctrl
 
 import (
 	"log"
+	"math/rand"
 	"time"
 
 	"github.com/icza/golab/model"
 )
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
 // Engine calculates and controls the game.
 type Engine struct {
@@ -76,10 +85,19 @@ func (e *Engine) initNewGame(cfg *NewGameConfig) {
 
 	m.Counter++
 
-	m.Lab = make([][]model.Block, cfg.LabSize.rows)
+	rows, cols := cfg.LabSize.rows, cfg.LabSize.cols
+
+	m.Lab = make([][]model.Block, rows)
 	for row := range m.Lab {
-		m.Lab[row] = make([]model.Block, cfg.LabSize.cols)
+		m.Lab[row] = make([]model.Block, cols)
 	}
+
+	generateLab(m.Lab)
+
+	m.Gopher = new(model.MovingObj)
+
+	numBulldogs := int(float64(rows*cols) * cfg.Difficulty.bulldogDensity / 1000)
+	m.Bulldogs = make([]*model.MovingObj, numBulldogs)
 
 	// TODO
 }
