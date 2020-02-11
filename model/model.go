@@ -2,6 +2,7 @@
 package model
 
 import (
+	"fmt"
 	"image"
 	"sync"
 )
@@ -61,4 +62,21 @@ const (
 	DirRight
 	// DirLeft .
 	DirLeft
+
+	// DirCount is not a valid direction: just to tell how many directions there are
+	DirCount
 )
+
+func (d Dir) String() string {
+	switch d {
+	case DirRight:
+		return "right"
+	case DirLeft:
+		return "left"
+	case DirUp:
+		return "up"
+	case DirDown:
+		return "down"
+	}
+	return fmt.Sprintf("Dir(%d)", d)
+}
