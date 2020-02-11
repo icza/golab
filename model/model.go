@@ -37,8 +37,10 @@ const (
 
 // MovingObj describes moving objects in the labyrinth.
 type MovingObj struct {
-	// Position in pixel coordinates.
-	PosX, PosY float64
+	// The position in the labyrinth in pixel coordinates
+	Pos struct {
+		X, Y float64
+	}
 
 	// Direction this object is facing to
 	Dir Dir
