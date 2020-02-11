@@ -147,11 +147,21 @@ func (v *View) drawLab() {
 	defer stack.Pop()
 
 	// Center lab:
+	displayWidth, displayHeight := viewWidth, viewHeight
+	if labWidth := m.Cols * ctrl.BlockSize; labWidth < displayWidth {
+		displayWidth = labWidth
+	}
+	if labHeight := m.Rows * ctrl.BlockSize; labHeight < displayHeight {
+		displayHeight = labHeight
+	}
 	op.TransformOp{}.Offset(f32.Point{
-		X: float32((gtx.Constraints.Width.Max - viewWidth) / 2),
+		X: float32((gtx.Constraints.Width.Max - displayWidth) / 2),
 		Y: controlsHeight,
 	}).Add(gtx.Ops)
-	clip.Rect{Rect: f32.Rectangle{Max: f32.Point{X: viewHeight, Y: viewHeight}}}.Op(gtx.Ops).Add(gtx.Ops)
+	clip.Rect{Rect: f32.Rectangle{Max: f32.Point{
+		X: float32(displayWidth),
+		Y: float32(displayHeight),
+	}}}.Op(gtx.Ops).Add(gtx.Ops)
 
 	// First the blocks:
 	v.ensureLabImgOp()
