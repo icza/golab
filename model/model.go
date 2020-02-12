@@ -33,6 +33,12 @@ type Model struct {
 
 	// Dead tells if Gopher is dead.
 	Dead bool
+
+	// Won tells if we won
+	Won bool
+
+	// For Gopher we maintain multiple target positions which specify a path on which Gopher will move along
+	TargetPoss []image.Point
 }
 
 // Block is a square unit of the Labyrinth

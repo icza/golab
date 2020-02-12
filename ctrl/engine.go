@@ -6,6 +6,7 @@
 package ctrl
 
 import (
+	"image"
 	"log"
 	"math"
 	"math/rand"
@@ -53,7 +54,9 @@ type Engine struct {
 // invalidate is a func which will be called by the engine to request a new view frame.
 func NewEngine(invalidate func()) *Engine {
 	e := &Engine{
-		Model:      &model.Model{},
+		Model: &model.Model{
+			TargetPoss: make([]image.Point, 0, 20), // cap defines max queueable points
+		},
 		cmdChan:    make(chan interface{}, 10),
 		invalidate: invalidate,
 		directions: make([]model.Dir, model.DirCount),
@@ -76,6 +79,11 @@ func NewEngine(invalidate func()) *Engine {
 // NewGame enqueues a new game command with the given config.
 func (e *Engine) NewGame(cfg GameConfig) {
 	e.cmdChan <- &cfg
+}
+
+// SendClick sends a click event from the user.
+func (e *Engine) SendClick(c Click) {
+	e.cmdChan <- &c
 }
 
 // Loop starts calculating the game.
@@ -105,6 +113,8 @@ func (e *Engine) processCmds() {
 			switch cmd := cmd.(type) {
 			case *GameConfig:
 				e.initNewGame(cmd)
+			case *Click:
+				e.handleClick(cmd)
 			default:
 				log.Printf("Unhandled cmd type: %T", cmd)
 			}
@@ -113,6 +123,64 @@ func (e *Engine) processCmds() {
 			return // No more commands queued
 		}
 	}
+}
+
+// handleClick handles a click
+func (e *Engine) handleClick(c *Click) {
+	m := e.Model
+
+	if m.Dead {
+		return
+	}
+
+	if c.Right {
+		m.TargetPoss = m.TargetPoss[:0]
+	}
+
+	// If target buffer is full, do nothing:
+	if len(m.TargetPoss) == cap(m.TargetPoss) {
+		return
+	}
+
+	// Last target pos:
+	var TargetPos image.Point
+	if len(m.TargetPoss) == 0 {
+		TargetPos = m.Gopher.TargetPos
+	} else {
+		TargetPos = m.TargetPoss[len(m.TargetPoss)-1]
+	}
+
+	// Check if new desired target is in the same row/column as the last target and if there is a free passage to there.
+	pCol, pRow := TargetPos.X/BlockSize, TargetPos.Y/BlockSize
+	tCol, tRow := c.X/BlockSize, c.Y/BlockSize
+
+	// sorted simply returns its parameters in ascendant order:
+	sorted := func(a, b int) (int, int) {
+		if a < b {
+			return a, b
+		}
+		return b, a
+	}
+
+	if pCol == tCol { // Same column
+		for row, row2 := sorted(pRow, tRow); row <= row2; row++ {
+			if m.Lab[row][tCol] == model.BlockWall {
+				return // Wall in the route
+			}
+		}
+	} else if pRow == tRow { // Same row
+		for col, col2 := sorted(pCol, tCol); col <= col2; col++ {
+			if m.Lab[tRow][col] == model.BlockWall {
+				return // Wall in the route
+			}
+		}
+	} else {
+		return // Only the same row or column can be commanded
+	}
+
+	// Target pos is allowed and reachable.
+	// Use target position rounded to the center of the target block:
+	m.TargetPoss = append(m.TargetPoss, image.Pt(tCol*BlockSize+BlockSize/2, tRow*BlockSize+BlockSize/2))
 }
 
 // initNewGame initializes a new game.
@@ -160,11 +228,35 @@ func (e *Engine) initNewGame(cfg *GameConfig) {
 		bd.TargetPos.X, bd.TargetPos.Y = int(bd.Pos.X), int(bd.Pos.Y)
 	}
 
-	// TODO
+	m.Dead = false
+	m.Won = false
+
+	// Throw away queued targets
+	m.TargetPoss = m.TargetPoss[:0]
 }
 
 // stepGopher handles moving the Gopher and also handles the multiple target positions of Gopher.
 func (e *Engine) stepGopher() {
+	m := e.Model
+	Gopher := m.Gopher
+
+	if m.Dead {
+		return // Dead Gopher can't move
+	}
+
+	// Check if reached current target position:
+	if int(Gopher.Pos.X) == Gopher.TargetPos.X && int(Gopher.Pos.Y) == Gopher.TargetPos.Y {
+		// Check if we have more target positions in our path:
+		if len(m.TargetPoss) > 0 {
+			// Set the next target as the current
+			Gopher.TargetPos = m.TargetPoss[0]
+			// and remove it from the targets:
+			m.TargetPoss = m.TargetPoss[:copy(m.TargetPoss, m.TargetPoss[1:])]
+		}
+	}
+
+	// Step Gopher
+	e.stepMovingObj(Gopher)
 }
 
 // stepBulldogs iterates over all Bulldogs, generates new random target if they reached their current, and steps them.

@@ -10,6 +10,7 @@ import (
 	"gioui.org/app"
 	"gioui.org/f32"
 	"gioui.org/font/gofont"
+	"gioui.org/io/pointer"
 	"gioui.org/io/system"
 	"gioui.org/layout"
 	"gioui.org/op"
@@ -65,6 +66,13 @@ type View struct {
 	gameCounter int
 	// cached ImageOp of the whole labyrinth (only the blocks)
 	labImgOp paint.ImageOp
+
+	// Tells what offset was last applied to draw the lab view.
+	// Used when calculating click position in the lab.
+	labViewOffset f32.Point
+	// labViewClip tells what clip rectangle was applied to draw the lab view.
+	// Used to tell if a click is accepted in the lab.
+	labViewClip f32.Rectangle
 }
 
 // New returns a new View.
@@ -102,6 +110,23 @@ func (v *View) Loop() {
 		switch e := e.(type) {
 		case system.FrameEvent:
 			v.drawFrame(e)
+		case pointer.Event:
+			// TODO maybe send click on Release?
+			if e.Type == pointer.Press {
+				pos := e.Position.Sub(v.labViewOffset)
+				// TODO apply clip
+				r := v.labViewClip
+				if pos.X >= r.Min.X && pos.X < r.Max.X &&
+					pos.Y >= r.Min.Y && pos.X < r.Max.Y {
+					// TODO if e.Source == pointer.Touch, set left button?
+					v.engine.SendClick(ctrl.Click{
+						X:     int(pos.X),
+						Y:     int(pos.Y),
+						Left:  e.Buttons&pointer.ButtonLeft != 0,
+						Right: e.Buttons&pointer.ButtonRight != 0,
+					})
+				}
+			}
 		case system.DestroyEvent:
 			log.Println("Goodbye!")
 		}
@@ -174,14 +199,12 @@ func (v *View) drawLab() {
 	if labHeight := m.Rows * ctrl.BlockSize; labHeight < displayHeight {
 		displayHeight = labHeight
 	}
-	op.TransformOp{}.Offset(f32.Point{
-		X: float32((gtx.Constraints.Width.Max - displayWidth) / 2),
-		Y: controlsHeight,
-	}).Add(gtx.Ops)
-	clip.Rect{Rect: f32.Rectangle{Max: f32.Point{
-		X: float32(displayWidth),
-		Y: float32(displayHeight),
-	}}}.Op(gtx.Ops).Add(gtx.Ops)
+	v.labViewOffset.X = float32((gtx.Constraints.Width.Max - displayWidth) / 2)
+	v.labViewOffset.Y = controlsHeight
+	op.TransformOp{}.Offset(v.labViewOffset).Add(gtx.Ops)
+	v.labViewClip.Max.X = float32(displayWidth)
+	v.labViewClip.Max.Y = float32(displayHeight)
+	clip.Rect{Rect: v.labViewClip}.Op(gtx.Ops).Add(gtx.Ops)
 
 	// First the blocks:
 	v.ensureLabImgOp()
