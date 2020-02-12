@@ -211,6 +211,16 @@ func (v *View) drawLab() {
 	v.drawImg(v.labImgOp, 0, 0)
 
 	// Now objects in the lab:
+	// Draw target position markers:
+	// dtp: drawTargetPos
+	dtp := func(p image.Point) {
+		rect := imgMarker.Bounds()
+		v.drawImg(v.imgOpMarker, float32(p.X-rect.Dx()/2), float32(p.Y-rect.Dy()/2))
+	}
+	dtp(m.Gopher.TargetPos)
+	for _, TargetPos := range m.TargetPoss {
+		dtp(TargetPos)
+	}
 	// Gopher:
 	if m.Dead {
 		v.drawObj(v.imgOpDead, m.Gopher)
