@@ -131,6 +131,8 @@ func (e *Engine) initNewGame(cfg *GameConfig) {
 	}
 	generateLab(m.Lab)
 
+	m.ExitPos.X, m.ExitPos.Y = (m.Cols-2)*BlockSize+BlockSize/2, (m.Rows-2)*BlockSize+BlockSize/2
+
 	// Init Gopher
 	m.Gopher = new(model.MovingObj)
 	m.Gopher.Pos.X = BlockSize + BlockSize/2 // Position Gopher to top left corner

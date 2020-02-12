@@ -22,6 +22,9 @@ type Model struct {
 	// Blocks of the lab. First indexed by row, then by column.
 	Lab [][]Block
 
+	// ExitPos: the position Gopher has to reach to win the game.
+	ExitPos image.Point
+
 	// Our well-beloved hero Gopher
 	Gopher *MovingObj
 

@@ -238,9 +238,15 @@ func (v *View) ensureLabImgOp() {
 			r.Min.X = col * ctrl.BlockSize
 			r.Max.X = r.Min.X + ctrl.BlockSize
 			src := imgBlocks[block]
-			draw.Draw(labImg, r, src, image.Point{}, draw.Src)
+			draw.Draw(labImg, r, src, image.Point{}, draw.Over)
 		}
 	}
+
+	// Exit sign:
+	r.Min = m.ExitPos
+	r.Min = r.Min.Add(image.Point{-ctrl.BlockSize / 2, -ctrl.BlockSize / 2})
+	r.Max = r.Min.Add(image.Point{ctrl.BlockSize, ctrl.BlockSize})
+	draw.Draw(labImg, r, imgExit, image.Point{}, draw.Over)
 
 	v.labImgOp = paint.NewImageOp(labImg)
 
