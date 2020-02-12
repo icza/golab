@@ -27,6 +27,9 @@ type Model struct {
 
 	// The ancient enemies of Gopher: the bloodthirsty Bulldogs.
 	Bulldogs []*MovingObj
+
+	// Dead tells if Gopher is dead.
+	Dead bool
 }
 
 // Block is a square unit of the Labyrinth
@@ -46,7 +49,7 @@ const (
 type MovingObj struct {
 	// The position in the labyrinth in pixel coordinates
 	Pos struct {
-		X, Y float32
+		X, Y float64
 	}
 
 	// Direction this object is facing to

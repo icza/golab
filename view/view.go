@@ -19,6 +19,7 @@ import (
 	"gioui.org/widget"
 	"gioui.org/widget/material"
 	"github.com/icza/golab/ctrl"
+	"github.com/icza/golab/model"
 )
 
 const (
@@ -188,13 +189,22 @@ func (v *View) drawLab() {
 
 	// Now objects in the lab:
 	// Gopher:
-	v.drawImg(v.imgOpGophers[m.Gopher.Dir], m.Gopher.Pos.X-ctrl.BlockSize/2, m.Gopher.Pos.Y-ctrl.BlockSize/2)
+	if m.Dead {
+		v.drawObj(v.imgOpDead, m.Gopher)
+	} else {
+		v.drawObj(v.imgOpGophers[m.Gopher.Dir], m.Gopher)
+	}
 	// Bulldogs:
 	for _, bd := range m.Bulldogs {
-		v.drawImg(v.imgOpBulldogs[bd.Dir], bd.Pos.X-ctrl.BlockSize/2, bd.Pos.Y-ctrl.BlockSize/2)
+		v.drawObj(v.imgOpBulldogs[bd.Dir], bd)
 	}
 
 	// TODO
+}
+
+// drawObj draws the given image of the given moving obj.
+func (v *View) drawObj(iop paint.ImageOp, obj *model.MovingObj) {
+	v.drawImg(iop, float32(obj.Pos.X-ctrl.BlockSize/2), float32(obj.Pos.Y-ctrl.BlockSize/2))
 }
 
 // drawImg draws the given image to the given position.

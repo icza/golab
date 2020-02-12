@@ -7,6 +7,7 @@ package ctrl
 
 import (
 	"log"
+	"math"
 	"math/rand"
 	"time"
 
@@ -22,6 +23,15 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
+var (
+	// dt is the delta time between iterations.
+	// We keep this fixed to simulate slower / faster game speeds.
+	dt = (50 * time.Millisecond).Seconds()
+
+	// v is the moving speed of Gopher and the Buddlogs in pixel/sec.
+	v = 2.0 * BlockSize
+)
+
 // Engine calculates and controls the game.
 type Engine struct {
 	Model *model.Model
@@ -34,6 +44,9 @@ type Engine struct {
 
 	// Current game config
 	cfg *GameConfig
+
+	// directions is a reused slice of all directions
+	directions []model.Dir
 }
 
 // NewEngine returns a new Engine.
@@ -43,6 +56,12 @@ func NewEngine(invalidate func()) *Engine {
 		Model:      &model.Model{},
 		cmdChan:    make(chan interface{}, 10),
 		invalidate: invalidate,
+		directions: make([]model.Dir, model.DirCount),
+	}
+
+	// Populate the directions slice
+	for i := range e.directions {
+		e.directions[i] = model.Dir(i)
 	}
 
 	e.initNewGame(&GameConfig{
@@ -67,8 +86,10 @@ func (e *Engine) Loop() {
 
 		e.processCmds()
 
+		e.stepGopher()
+		e.stepBulldogs()
+
 		e.Model.Unlock()
-		// TODO
 
 		e.invalidate()
 
@@ -131,11 +152,103 @@ func (e *Engine) initNewGame(cfg *GameConfig) {
 		for gr, gc := row, col; (row-gr)*(row-gr) <= 16 && (col-gc)*(col-gc) <= 16; row, col = rPassPos(0, m.Rows), rPassPos(0, m.Cols) {
 		}
 
-		bd.Pos.X = float32(col*BlockSize + BlockSize/2)
-		bd.Pos.Y = float32(row*BlockSize + BlockSize/2)
+		bd.Pos.X = float64(col*BlockSize + BlockSize/2)
+		bd.Pos.Y = float64(row*BlockSize + BlockSize/2)
 
 		bd.TargetPos.X, bd.TargetPos.Y = int(bd.Pos.X), int(bd.Pos.Y)
 	}
 
 	// TODO
+}
+
+// stepGopher handles moving the Gopher and also handles the multiple target positions of Gopher.
+func (e *Engine) stepGopher() {
+}
+
+// stepBulldogs iterates over all Bulldogs, generates new random target if they reached their current, and steps them.
+func (e *Engine) stepBulldogs() {
+	m := e.Model
+
+	// Gopher's position:
+	gpos := m.Gopher.Pos
+
+	dirs := e.directions
+
+	for _, bd := range m.Bulldogs {
+		x, y := int(bd.Pos.X), int(bd.Pos.Y)
+
+		if bd.TargetPos.X == x && bd.TargetPos.Y == y {
+			row, col := y/BlockSize, x/BlockSize
+			// Generate new, random target.
+			// For this we shuffle all the directions, and check them sequentially.
+			// Firts one in which direction there is a free path wins (such path surely exists).
+
+			// Shuffle the directions slice:
+			for i := len(dirs) - 1; i > 0; i-- { // last is already random, no use switching with itself
+				r := rand.Intn(i + 1)
+				dirs[i], dirs[r] = dirs[r], dirs[i]
+			}
+
+			var drow, dcol int
+			for _, dir := range dirs {
+				switch dir {
+				case model.DirLeft:
+					dcol = -1
+				case model.DirRight:
+					dcol = 1
+				case model.DirUp:
+					drow = -1
+				case model.DirDown:
+					drow = 1
+				}
+				if m.Lab[row+drow][col+dcol] == model.BlockEmpty {
+					// Direction is good, check if we can even step 2 bocks in this way:
+					if m.Lab[row+drow*2][col+dcol*2] == model.BlockEmpty {
+						drow *= 2
+						dcol *= 2
+					}
+					break
+				}
+				drow, dcol = 0, 0
+			}
+
+			bd.TargetPos.X += dcol * BlockSize
+			bd.TargetPos.Y += drow * BlockSize
+		}
+
+		e.stepMovingObj(bd)
+
+		if !m.Dead {
+			// Check if this Bulldog reached Gopher
+			if math.Abs(gpos.X-bd.Pos.X) < BlockSize*0.75 && math.Abs(gpos.Y-bd.Pos.Y) < BlockSize*0.75 {
+				m.Dead = true // OK, we just died
+			}
+		}
+	}
+}
+
+// stepMovingObj steps the given MovingObj.
+func (e *Engine) stepMovingObj(m *model.MovingObj) {
+	x, y := int(m.Pos.X), int(m.Pos.Y)
+
+	// Only horizontal or vertical movement is allowed!
+	if x != m.TargetPos.X {
+		dx := math.Min(dt*v, math.Abs(float64(m.TargetPos.X)-m.Pos.X))
+		if x > m.TargetPos.X {
+			dx = -dx
+			m.Dir = model.DirLeft
+		} else {
+			m.Dir = model.DirRight
+		}
+		m.Pos.X += dx
+	} else if y != m.TargetPos.Y {
+		dy := math.Min(dt*v, math.Abs(float64(m.TargetPos.Y)-m.Pos.Y))
+		if y > m.TargetPos.Y {
+			dy = -dy
+			m.Dir = model.DirUp
+		} else {
+			m.Dir = model.DirDown
+		}
+		m.Pos.Y += dy
+	}
 }
