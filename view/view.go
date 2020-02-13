@@ -205,21 +205,26 @@ func (v *View) drawLab() {
 	defer stack.Pop()
 
 	// Center lab view in window:
-	displayWidth, displayHeight := viewWidth, viewHeight
-	labWidth := m.Cols * ctrl.BlockSize
-	labHeight := m.Rows * ctrl.BlockSize
+	displayWidth, displayHeight := float32(viewWidth), float32(viewHeight)
+	labWidth := float32(m.Cols * ctrl.BlockSize)
+	labHeight := float32(m.Rows * ctrl.BlockSize)
 	if labWidth < displayWidth {
 		displayWidth = labWidth
 	}
 	if labHeight < displayHeight {
 		displayHeight = labHeight
 	}
+
+	// Calculate the visible window of the lab image.
 	// Try to center Gopher in view:
-	gpos := m.Gopher.Pos
-	// Calculate the visible window of the lab image:
-	rect := image.Rect(0, 0, displayWidth, displayHeight).Add(image.Pt(int(gpos.X)-displayWidth/2, int(gpos.Y)-displayHeight/2))
+	rect := f32.Rectangle{}
+	rect.Max = f32.Point{X: displayWidth, Y: displayHeight}
+	rect = rect.Add(f32.Point{
+		X: float32(m.Gopher.Pos.X) - displayWidth/2,
+		Y: float32(m.Gopher.Pos.Y) - displayHeight/2,
+	})
 	// But needs correction at the edges of the view (it can't be centered)
-	corr := image.Point{}
+	corr := f32.Point{}
 	if rect.Min.X < 0 {
 		corr.X = -rect.Min.X
 	}
@@ -234,13 +239,12 @@ func (v *View) drawLab() {
 	}
 	rect = rect.Add(corr)
 
-	v.labViewOffset.X = float32(-rect.Min.X + (gtx.Constraints.Width.Max-displayWidth)/2)
-	v.labViewOffset.Y = float32(-rect.Min.Y + controlsHeight)
+	v.labViewOffset = f32.Point{
+		X: (float32(gtx.Constraints.Width.Max) - displayWidth) / 2,
+		Y: controlsHeight,
+	}.Sub(rect.Min)
 	op.TransformOp{}.Offset(v.labViewOffset).Add(gtx.Ops)
-	v.labViewClip.Min.X = float32(rect.Min.X)
-	v.labViewClip.Min.Y = float32(rect.Min.Y)
-	v.labViewClip.Max.X = float32(rect.Max.X)
-	v.labViewClip.Max.Y = float32(rect.Max.Y)
+	v.labViewClip = rect
 	clip.Rect{Rect: v.labViewClip}.Op(gtx.Ops).Add(gtx.Ops)
 
 	// First the blocks:
