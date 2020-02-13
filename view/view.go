@@ -37,6 +37,19 @@ func init() {
 	gofont.Register()
 }
 
+// imageOp wraps a paint.ImageOp and the source image.
+type imageOp struct {
+	paint.ImageOp
+	src image.Image
+}
+
+func newImageOp(src image.Image) imageOp {
+	return imageOp{
+		ImageOp: paint.NewImageOp(src),
+		src:     src,
+	}
+}
+
 // View displays the game window and handles user input.
 type View struct {
 	engine *ctrl.Engine
@@ -55,19 +68,17 @@ type View struct {
 	speedOpt *options
 
 	// "static" imageOps
-	imgOpGophers  []paint.ImageOp
-	imgOpDead     paint.ImageOp
-	imgOpBulldogs []paint.ImageOp
-	imgOpMarker   paint.ImageOp
-	imgOpExit     paint.ImageOp
-	imgOpWon      paint.ImageOp
+	imgOpGophers  []imageOp
+	imgOpDead     imageOp
+	imgOpBulldogs []imageOp
+	imgOpMarker   imageOp
+	imgOpExit     imageOp
+	imgOpWon      imageOp
 
 	// gameCounter for the cached data
 	gameCounter int
-	// cached image of the whole labyrinth (only the blocks)
-	labImg *image.RGBA
 	// cached ImageOp of the whole labyrinth (only the blocks)
-	labImgOp paint.ImageOp
+	labImgOp imageOp
 
 	// Tells what offset was last applied to draw the lab view.
 	// Used when calculating click position in the lab.
@@ -85,17 +96,17 @@ func New(engine *ctrl.Engine, w *app.Window) *View {
 		th:          material.NewTheme(),
 		gtx:         layout.NewContext((w.Queue())),
 		newGameBtn:  new(widget.Button),
-		imgOpDead:   paint.NewImageOp(imgDead),
-		imgOpMarker: paint.NewImageOp(imgMarker),
-		imgOpExit:   paint.NewImageOp(imgExit),
-		imgOpWon:    paint.NewImageOp(imgWon),
+		imgOpDead:   newImageOp(imgDead),
+		imgOpMarker: newImageOp(imgMarker),
+		imgOpExit:   newImageOp(imgExit),
+		imgOpWon:    newImageOp(imgWon),
 	}
 
 	for _, img := range imgGophers {
-		v.imgOpGophers = append(v.imgOpGophers, paint.NewImageOp(img))
+		v.imgOpGophers = append(v.imgOpGophers, newImageOp(img))
 	}
 	for _, img := range imgBulldogs {
-		v.imgOpBulldogs = append(v.imgOpBulldogs, paint.NewImageOp(img))
+		v.imgOpBulldogs = append(v.imgOpBulldogs, newImageOp(img))
 	}
 
 	v.diffOpt = newOptions(v, "Difficulty", ctrl.Difficulties, ctrl.DifficultyDefaultIdx)
@@ -234,7 +245,7 @@ func (v *View) drawLab() {
 
 	// First the blocks:
 	v.ensureLabImgOp()
-	v.drawImg(v.labImgOp, 0, 0, v.labImg)
+	v.drawImg(v.labImgOp, 0, 0)
 
 	// Now objects in the lab:
 	// TODO do not draw images outside of the view
@@ -242,38 +253,38 @@ func (v *View) drawLab() {
 	// Draw target position markers:
 	mbounds := imgMarker.Bounds()
 	tp := m.Gopher.TargetPos
-	v.drawImg(v.imgOpMarker, float32(tp.X-mbounds.Dx()/2), float32(tp.Y-mbounds.Dy()/2), imgMarker)
+	v.drawImg(v.imgOpMarker, float32(tp.X-mbounds.Dx()/2), float32(tp.Y-mbounds.Dy()/2))
 	for _, tp := range m.TargetPoss {
-		v.drawImg(v.imgOpMarker, float32(tp.X-mbounds.Dx()/2), float32(tp.Y-mbounds.Dy()/2), imgMarker)
+		v.drawImg(v.imgOpMarker, float32(tp.X-mbounds.Dx()/2), float32(tp.Y-mbounds.Dy()/2))
 	}
 	// Gopher:
 	if m.Dead {
-		v.drawObj(v.imgOpDead, m.Gopher, imgDead)
+		v.drawObj(v.imgOpDead, m.Gopher)
 	} else {
-		v.drawObj(v.imgOpGophers[m.Gopher.Dir], m.Gopher, imgGophers[m.Gopher.Dir])
+		v.drawObj(v.imgOpGophers[m.Gopher.Dir], m.Gopher)
 	}
 	// Bulldogs:
 	for _, bd := range m.Bulldogs {
-		v.drawObj(v.imgOpBulldogs[bd.Dir], bd, imgBulldogs[bd.Dir])
+		v.drawObj(v.imgOpBulldogs[bd.Dir], bd)
 	}
 
 	// TODO
 }
 
 // drawObj draws the given image of the given moving obj.
-func (v *View) drawObj(iop paint.ImageOp, obj *model.MovingObj, img image.Image) {
-	v.drawImg(iop, float32(obj.Pos.X-ctrl.BlockSize/2), float32(obj.Pos.Y-ctrl.BlockSize/2), img)
+func (v *View) drawObj(iop imageOp, obj *model.MovingObj) {
+	v.drawImg(iop, float32(obj.Pos.X-ctrl.BlockSize/2), float32(obj.Pos.Y-ctrl.BlockSize/2))
 }
 
 // drawImg draws the given image to the given position.
-func (v *View) drawImg(iop paint.ImageOp, x, y float32, img image.Image) {
+func (v *View) drawImg(iop imageOp, x, y float32) {
 	var stack op.StackOp
 	stack.Push(v.gtx.Ops)
 
 	op.TransformOp{}.Offset(f32.Point{X: x, Y: y}).Add(v.gtx.Ops)
 
 	iop.Add(v.gtx.Ops)
-	imgBounds := img.Bounds()
+	imgBounds := iop.src.Bounds()
 	paint.PaintOp{Rect: f32.Rectangle{
 		Max: f32.Point{X: float32(imgBounds.Max.X), Y: float32(imgBounds.Max.Y)},
 	}}.Add(v.gtx.Ops)
@@ -308,8 +319,7 @@ func (v *View) ensureLabImgOp() {
 	r.Max = r.Min.Add(image.Point{ctrl.BlockSize, ctrl.BlockSize})
 	draw.Draw(labImg, r, imgExit, image.Point{}, draw.Over)
 
-	v.labImg = labImg
-	v.labImgOp = paint.NewImageOp(labImg)
+	v.labImgOp = newImageOp(labImg)
 
 	v.gameCounter = m.Counter
 }
