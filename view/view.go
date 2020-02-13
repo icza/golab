@@ -200,6 +200,17 @@ func (v *View) drawLab() {
 
 	gtx := v.gtx
 
+	// Victory image must be drawn while locking but
+	// after transformations undone.
+	defer func() {
+		if m.Won {
+			v.drawImg(v.imgOpWon,
+				v.labViewOffset.X+v.labViewClip.Min.X+(v.labViewClip.Dx()-float32(v.imgOpWon.src.Bounds().Dx()))/2,
+				v.labViewOffset.Y+v.labViewClip.Min.Y+(v.labViewClip.Dy()-float32(v.imgOpWon.src.Bounds().Dy()))/2,
+			)
+		}
+	}()
+
 	var stack op.StackOp
 	stack.Push(gtx.Ops)
 	defer stack.Pop()
@@ -271,8 +282,6 @@ func (v *View) drawLab() {
 	for _, bd := range m.Bulldogs {
 		v.drawObj(v.imgOpBulldogs[bd.Dir], bd)
 	}
-
-	// TODO
 }
 
 // drawObj draws the given image of the given moving obj.

@@ -94,8 +94,10 @@ func (e *Engine) Loop() {
 
 		e.processCmds()
 
-		e.stepGopher()
-		e.stepBulldogs()
+		if !e.Model.Won {
+			e.stepGopher()
+			e.stepBulldogs()
+		}
 
 		e.Model.Unlock()
 
@@ -257,6 +259,11 @@ func (e *Engine) stepGopher() {
 
 	// Step Gopher
 	e.stepMovingObj(Gopher)
+
+	// Check if Gopher reached the exit point
+	if int(m.Gopher.Pos.X) == m.ExitPos.X && int(m.Gopher.Pos.Y) == m.ExitPos.Y {
+		m.Won = true
+	}
 }
 
 // stepBulldogs iterates over all Bulldogs, generates new random target if they reached their current, and steps them.
@@ -313,8 +320,8 @@ func (e *Engine) stepBulldogs() {
 		e.stepMovingObj(bd)
 
 		if !m.Dead {
-			// Check if this Bulldog reached Gopher
-			if math.Abs(gpos.X-bd.Pos.X) < BlockSize*0.75 && math.Abs(gpos.Y-bd.Pos.Y) < BlockSize*0.75 {
+			// Check if this Bulldog reached Gopher (but only if not just won)
+			if math.Abs(gpos.X-bd.Pos.X) < BlockSize*0.75 && math.Abs(gpos.Y-bd.Pos.Y) < BlockSize*0.75 && !m.Won {
 				m.Dead = true // OK, we just died
 			}
 		}
