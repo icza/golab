@@ -130,7 +130,7 @@ func (v *View) Loop() {
 				// apply clip
 				r := v.labViewClip
 				if pos.X >= r.Min.X && pos.X < r.Max.X &&
-					pos.Y >= r.Min.Y && pos.X < r.Max.Y {
+					pos.Y >= r.Min.Y && pos.Y < r.Max.Y {
 					// TODO if e.Source == pointer.Touch, set left button?
 					v.engine.SendClick(ctrl.Click{
 						X:     int(pos.X),
