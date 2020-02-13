@@ -23,7 +23,7 @@ func (s *Speed) String() string {
 var Speeds = []*Speed{
 	&Speed{Name: "Slow", loopDelay: 67 * time.Millisecond},                  // ~15 FPS
 	&Speed{Name: "Normal", loopDelay: 50 * time.Millisecond, Default: true}, // ~20 FPS
-	&Speed{Name: "Fast", loopDelay: 40 * time.Millisecond},                  // ~25 FPS
+	&Speed{Name: "Fast", loopDelay: 37 * time.Millisecond},                  // ~27 FPS
 }
 
 // SpeedDefaultIdx is the index of the default speed in Speeds.
