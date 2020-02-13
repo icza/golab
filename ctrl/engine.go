@@ -137,6 +137,10 @@ func (e *Engine) handleClick(c *Click) {
 
 	if c.Right {
 		m.TargetPoss = m.TargetPoss[:0]
+		// Also change Gopher's current target to remain on current block:
+		m.Gopher.TargetPos.X = int(m.Gopher.Pos.X)/BlockSize*BlockSize + BlockSize/2
+		m.Gopher.TargetPos.Y = int(m.Gopher.Pos.Y)/BlockSize*BlockSize + BlockSize/2
+		return
 	}
 
 	// If target buffer is full, do nothing:
