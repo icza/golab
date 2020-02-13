@@ -64,6 +64,8 @@ type View struct {
 
 	// gameCounter for the cached data
 	gameCounter int
+	// cached image of the whole labyrinth (only the blocks)
+	labImg *image.RGBA
 	// cached ImageOp of the whole labyrinth (only the blocks)
 	labImgOp paint.ImageOp
 
@@ -114,7 +116,7 @@ func (v *View) Loop() {
 			// TODO maybe send click on Release?
 			if e.Type == pointer.Press {
 				pos := e.Position.Sub(v.labViewOffset)
-				// TODO apply clip
+				// apply clip
 				r := v.labViewClip
 				if pos.X >= r.Min.X && pos.X < r.Max.X &&
 					pos.Y >= r.Min.Y && pos.X < r.Max.Y {
@@ -191,65 +193,90 @@ func (v *View) drawLab() {
 	stack.Push(gtx.Ops)
 	defer stack.Pop()
 
-	// Center lab:
+	// Center lab view in window:
 	displayWidth, displayHeight := viewWidth, viewHeight
-	if labWidth := m.Cols * ctrl.BlockSize; labWidth < displayWidth {
+	labWidth := m.Cols * ctrl.BlockSize
+	labHeight := m.Rows * ctrl.BlockSize
+	if labWidth < displayWidth {
 		displayWidth = labWidth
 	}
-	if labHeight := m.Rows * ctrl.BlockSize; labHeight < displayHeight {
+	if labHeight < displayHeight {
 		displayHeight = labHeight
 	}
-	v.labViewOffset.X = float32((gtx.Constraints.Width.Max - displayWidth) / 2)
-	v.labViewOffset.Y = controlsHeight
+	// Try to center Gopher in view:
+	gpos := m.Gopher.Pos
+	// Calculate the visible window of the lab image:
+	rect := image.Rect(0, 0, displayWidth, displayHeight).Add(image.Pt(int(gpos.X)-displayWidth/2, int(gpos.Y)-displayHeight/2))
+	// But needs correction at the edges of the view (it can't be centered)
+	corr := image.Point{}
+	if rect.Min.X < 0 {
+		corr.X = -rect.Min.X
+	}
+	if rect.Min.Y < 0 {
+		corr.Y = -rect.Min.Y
+	}
+	if rect.Max.X > labWidth {
+		corr.X = labWidth - rect.Max.X
+	}
+	if rect.Max.Y > labHeight {
+		corr.Y = labHeight - rect.Max.Y
+	}
+	rect = rect.Add(corr)
+
+	v.labViewOffset.X = float32(-rect.Min.X + (gtx.Constraints.Width.Max-displayWidth)/2)
+	v.labViewOffset.Y = float32(-rect.Min.Y + controlsHeight)
 	op.TransformOp{}.Offset(v.labViewOffset).Add(gtx.Ops)
-	v.labViewClip.Max.X = float32(displayWidth)
-	v.labViewClip.Max.Y = float32(displayHeight)
+	v.labViewClip.Min.X = float32(rect.Min.X)
+	v.labViewClip.Min.Y = float32(rect.Min.Y)
+	v.labViewClip.Max.X = float32(rect.Max.X)
+	v.labViewClip.Max.Y = float32(rect.Max.Y)
 	clip.Rect{Rect: v.labViewClip}.Op(gtx.Ops).Add(gtx.Ops)
 
 	// First the blocks:
 	v.ensureLabImgOp()
-	v.drawImg(v.labImgOp, 0, 0)
+	v.drawImg(v.labImgOp, 0, 0, v.labImg)
 
 	// Now objects in the lab:
+	// TODO do not draw images outside of the view
+
 	// Draw target position markers:
-	// dtp: drawTargetPos
-	dtp := func(p image.Point) {
-		rect := imgMarker.Bounds()
-		v.drawImg(v.imgOpMarker, float32(p.X-rect.Dx()/2), float32(p.Y-rect.Dy()/2))
-	}
-	dtp(m.Gopher.TargetPos)
-	for _, TargetPos := range m.TargetPoss {
-		dtp(TargetPos)
+	mbounds := imgMarker.Bounds()
+	tp := m.Gopher.TargetPos
+	v.drawImg(v.imgOpMarker, float32(tp.X-mbounds.Dx()/2), float32(tp.Y-mbounds.Dy()/2), imgMarker)
+	for _, tp := range m.TargetPoss {
+		v.drawImg(v.imgOpMarker, float32(tp.X-mbounds.Dx()/2), float32(tp.Y-mbounds.Dy()/2), imgMarker)
 	}
 	// Gopher:
 	if m.Dead {
-		v.drawObj(v.imgOpDead, m.Gopher)
+		v.drawObj(v.imgOpDead, m.Gopher, imgDead)
 	} else {
-		v.drawObj(v.imgOpGophers[m.Gopher.Dir], m.Gopher)
+		v.drawObj(v.imgOpGophers[m.Gopher.Dir], m.Gopher, imgGophers[m.Gopher.Dir])
 	}
 	// Bulldogs:
 	for _, bd := range m.Bulldogs {
-		v.drawObj(v.imgOpBulldogs[bd.Dir], bd)
+		v.drawObj(v.imgOpBulldogs[bd.Dir], bd, imgBulldogs[bd.Dir])
 	}
 
 	// TODO
 }
 
 // drawObj draws the given image of the given moving obj.
-func (v *View) drawObj(iop paint.ImageOp, obj *model.MovingObj) {
-	v.drawImg(iop, float32(obj.Pos.X-ctrl.BlockSize/2), float32(obj.Pos.Y-ctrl.BlockSize/2))
+func (v *View) drawObj(iop paint.ImageOp, obj *model.MovingObj, img image.Image) {
+	v.drawImg(iop, float32(obj.Pos.X-ctrl.BlockSize/2), float32(obj.Pos.Y-ctrl.BlockSize/2), img)
 }
 
 // drawImg draws the given image to the given position.
-func (v *View) drawImg(iop paint.ImageOp, x, y float32) {
+func (v *View) drawImg(iop paint.ImageOp, x, y float32, img image.Image) {
 	var stack op.StackOp
 	stack.Push(v.gtx.Ops)
 
 	op.TransformOp{}.Offset(f32.Point{X: x, Y: y}).Add(v.gtx.Ops)
 
-	img := v.th.Image(iop)
-	img.Scale = 1
-	img.Layout(v.gtx)
+	iop.Add(v.gtx.Ops)
+	imgBounds := img.Bounds()
+	paint.PaintOp{Rect: f32.Rectangle{
+		Max: f32.Point{X: float32(imgBounds.Max.X), Y: float32(imgBounds.Max.Y)},
+	}}.Add(v.gtx.Ops)
 
 	stack.Pop()
 }
@@ -281,6 +308,7 @@ func (v *View) ensureLabImgOp() {
 	r.Max = r.Min.Add(image.Point{ctrl.BlockSize, ctrl.BlockSize})
 	draw.Draw(labImg, r, imgExit, image.Point{}, draw.Over)
 
+	v.labImg = labImg
 	v.labImgOp = paint.NewImageOp(labImg)
 
 	v.gameCounter = m.Counter
