@@ -137,7 +137,7 @@ func (e *Engine) processCmds() {
 func (e *Engine) handleClick(c *Click) {
 	m := e.Model
 
-	if m.Dead {
+	if m.Dead || m.Won {
 		return
 	}
 
@@ -199,7 +199,7 @@ func (e *Engine) handleClick(c *Click) {
 func (e *Engine) handleKey(k *Key) {
 	m := e.Model
 
-	if m.Dead {
+	if m.Dead || m.Won {
 		return
 	}
 
@@ -210,6 +210,7 @@ func (e *Engine) handleKey(k *Key) {
 		if !k.DirKeys[dir] {
 			continue
 		}
+		Gopher.Dir = dir
 		var drow, dcol int
 		switch dir {
 		case DirLeft:
@@ -224,8 +225,10 @@ func (e *Engine) handleKey(k *Key) {
 
 		if m.Lab[row+drow][col+dcol] == BlockEmpty {
 			m.TargetPoss = m.TargetPoss[:0]
-			Gopher.TargetPos.X = (col+dcol)*BlockSize + BlockSize/2
-			Gopher.TargetPos.Y = (row+drow)*BlockSize + BlockSize/2
+			m.TargetPoss = append(m.TargetPoss, image.Point{
+				X: (col+dcol)*BlockSize + BlockSize/2,
+				Y: (row+drow)*BlockSize + BlockSize/2},
+			)
 			break
 		}
 	}
