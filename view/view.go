@@ -109,9 +109,9 @@ func New(eng *engine.Engine, w *app.Window) *View {
 		v.imgOpBulldogs = append(v.imgOpBulldogs, newImageOp(img))
 	}
 
-	v.diffOpt = newOptions(v, "Difficulty", engine.Difficulties, engine.DifficultyDefaultIdx)
-	v.labSizeOpt = newOptions(v, "Lab size", engine.LabSizes, engine.LabSizeDefaultIdx)
-	v.speedOpt = newOptions(v, "Speed", engine.Speeds, engine.SpeedDefaultIdx)
+	v.diffOpt = newOptions(v, "[D]ifficulty", engine.Difficulties, engine.DifficultyDefaultIdx)
+	v.labSizeOpt = newOptions(v, "[L]ab size", engine.LabSizes, engine.LabSizeDefaultIdx)
+	v.speedOpt = newOptions(v, "[S]peed", engine.Speeds, engine.SpeedDefaultIdx)
 
 	return v
 }
@@ -210,7 +210,7 @@ func (v *View) drawControls() {
 			layout.Flex{Axis: layout.Horizontal, Alignment: layout.Middle}.Layout(gtx,
 				layout.Rigid(func() {
 					layout.Inset{Left: unit.Px(10), Right: unit.Px(10)}.Layout(gtx, func() {
-						b := th.Button("New Game")
+						b := th.Button("[N]ew Game")
 						b.Background = color.RGBA{R: 20, G: 130, B: 20, A: 255}
 						b.Layout(gtx, v.newGameBtn)
 					})
