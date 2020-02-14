@@ -204,13 +204,22 @@ func (e *Engine) handleKey(k *Key) {
 	}
 
 	Gopher := m.Gopher
-	col, row := int(Gopher.Pos.X)/BlockSize, int(Gopher.Pos.Y)/BlockSize
 
 	for dir := Dir(0); dir < DirCount; dir++ {
 		if !k.DirKeys[dir] {
 			continue
 		}
 		Gopher.Dir = dir
+		// If Gopher's target is more than a block away, clear that target:
+		dx, dy := int(Gopher.Pos.X)-Gopher.TargetPos.X, int(Gopher.Pos.Y)-Gopher.TargetPos.Y
+		if dx <= -BlockSize || dx >= BlockSize || dy <= -BlockSize || dy >= BlockSize {
+			m.TargetPoss = m.TargetPoss[:0]
+			m.Gopher.TargetPos.X = int(m.Gopher.Pos.X)/BlockSize*BlockSize + BlockSize/2
+			m.Gopher.TargetPos.Y = int(m.Gopher.Pos.Y)/BlockSize*BlockSize + BlockSize/2
+		}
+
+		col, row := Gopher.TargetPos.X/BlockSize, Gopher.TargetPos.Y/BlockSize
+
 		var drow, dcol int
 		switch dir {
 		case DirLeft:
