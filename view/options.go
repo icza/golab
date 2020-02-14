@@ -54,7 +54,7 @@ func (o *options) selected() interface{} {
 
 // layout lays out the UI widget
 func (o *options) layout() {
-	layout.Inset{Left: unit.Px(10), Right: unit.Px(10)}.Layout(o.v.gtx, func() {
+	layout.Inset{Left: unit.Px(5), Right: unit.Px(5)}.Layout(o.v.gtx, func() {
 		b := o.v.th.Button(
 			fmt.Sprintf("%s: %s", o.title, o.selected()),
 		)
