@@ -232,8 +232,9 @@ func (e *Engine) handleKey(k *Key) {
 			drow = 1
 		}
 
-		// TODO if current target is in the opposite direction, then
-		// use the new target as the current (overwriting old, and not enqueueing).
+		// If current target is in the opposite direction, then
+		// use the new target as the current (overwriting old).
+		// Else just queue the new target.
 		if dx*dcol < 0 || dy*drow < 0 {
 			m.TargetPoss = m.TargetPoss[:0]
 			Gopher.TargetPos.X = (col+dcol)*BlockSize + BlockSize/2
