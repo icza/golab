@@ -10,6 +10,7 @@ import (
 	"gioui.org/app"
 	"gioui.org/f32"
 	"gioui.org/font/gofont"
+	"gioui.org/io/key"
 	"gioui.org/io/pointer"
 	"gioui.org/io/system"
 	"gioui.org/layout"
@@ -138,6 +139,20 @@ func (v *View) Loop() {
 						Right: e.Buttons&pointer.ButtonRight != 0,
 					})
 				}
+			}
+		case key.Event:
+			sendKey := func(dir engine.Dir) {
+				v.engine.SendKey(engine.Key{DirKeys: map[engine.Dir]bool{dir: true}})
+			}
+			switch e.Name {
+			case key.NameLeftArrow:
+				sendKey(engine.DirLeft)
+			case key.NameRightArrow:
+				sendKey(engine.DirRight)
+			case key.NameUpArrow:
+				sendKey(engine.DirUp)
+			case key.NameDownArrow:
+				sendKey(engine.DirDown)
 			}
 		case system.DestroyEvent:
 			log.Println("Goodbye!")

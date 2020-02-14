@@ -13,3 +13,8 @@ type Click struct {
 	Left  bool // Tells if left button was pressed
 	Right bool // Tells if right button was pressed
 }
+
+// Key describes a key event.
+type Key struct {
+	DirKeys map[Dir]bool // Tells if keys for the directions were pressed
+}

@@ -84,6 +84,11 @@ func (e *Engine) SendClick(c Click) {
 	e.cmdChan <- &c
 }
 
+// SendKey sends a key event from the user.
+func (e *Engine) SendKey(k Key) {
+	e.cmdChan <- &k
+}
+
 // Loop starts calculating the game.
 // This function returns only if the user closes the app.
 func (e *Engine) Loop() {
@@ -105,6 +110,7 @@ func (e *Engine) Loop() {
 	}
 }
 
+// processCmds processes queued commands.
 func (e *Engine) processCmds() {
 	for {
 		select {
@@ -115,6 +121,8 @@ func (e *Engine) processCmds() {
 				e.initNewGame(cmd)
 			case *Click:
 				e.handleClick(cmd)
+			case *Key:
+				e.handleKey(cmd)
 			default:
 				log.Printf("Unhandled cmd type: %T", cmd)
 			}
@@ -125,7 +133,7 @@ func (e *Engine) processCmds() {
 	}
 }
 
-// handleClick handles a click
+// handleClick handles a Click command
 func (e *Engine) handleClick(c *Click) {
 	m := e.Model
 
@@ -187,7 +195,43 @@ func (e *Engine) handleClick(c *Click) {
 	m.TargetPoss = append(m.TargetPoss, image.Pt(tCol*BlockSize+BlockSize/2, tRow*BlockSize+BlockSize/2))
 }
 
-// initNewGame initializes a new game.
+// handleKey handles a Key command.
+func (e *Engine) handleKey(k *Key) {
+	m := e.Model
+
+	if m.Dead {
+		return
+	}
+
+	Gopher := m.Gopher
+	col, row := int(Gopher.Pos.X)/BlockSize, int(Gopher.Pos.Y)/BlockSize
+
+	for dir := Dir(0); dir < DirCount; dir++ {
+		if !k.DirKeys[dir] {
+			continue
+		}
+		var drow, dcol int
+		switch dir {
+		case DirLeft:
+			dcol = -1
+		case DirRight:
+			dcol = 1
+		case DirUp:
+			drow = -1
+		case DirDown:
+			drow = 1
+		}
+
+		if m.Lab[row+drow][col+dcol] == BlockEmpty {
+			m.TargetPoss = m.TargetPoss[:0]
+			Gopher.TargetPos.X = (col+dcol)*BlockSize + BlockSize/2
+			Gopher.TargetPos.Y = (row+drow)*BlockSize + BlockSize/2
+			break
+		}
+	}
+}
+
+// initNewGame handles a GameConfig command: initializes a new game.
 func (e *Engine) initNewGame(cfg *GameConfig) {
 	e.cfg = cfg
 
