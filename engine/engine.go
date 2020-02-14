@@ -211,7 +211,7 @@ func (e *Engine) handleKey(k *Key) {
 		}
 		Gopher.Dir = dir
 		// If Gopher's target is more than a block away, clear that target:
-		dx, dy := int(Gopher.Pos.X)-Gopher.TargetPos.X, int(Gopher.Pos.Y)-Gopher.TargetPos.Y
+		dx, dy := Gopher.TargetPos.X-int(Gopher.Pos.X), Gopher.TargetPos.Y-int(Gopher.Pos.Y)
 		if dx <= -BlockSize || dx >= BlockSize || dy <= -BlockSize || dy >= BlockSize {
 			m.TargetPoss = m.TargetPoss[:0]
 			m.Gopher.TargetPos.X = int(m.Gopher.Pos.X)/BlockSize*BlockSize + BlockSize/2
@@ -232,7 +232,13 @@ func (e *Engine) handleKey(k *Key) {
 			drow = 1
 		}
 
-		if m.Lab[row+drow][col+dcol] == BlockEmpty {
+		// TODO if current target is in the opposite direction, then
+		// use the new target as the current (overwriting old, and not enqueueing).
+		if dx*dcol < 0 || dy*drow < 0 {
+			m.TargetPoss = m.TargetPoss[:0]
+			Gopher.TargetPos.X = (col+dcol)*BlockSize + BlockSize/2
+			Gopher.TargetPos.Y = (row+drow)*BlockSize + BlockSize/2
+		} else if m.Lab[row+drow][col+dcol] == BlockEmpty {
 			m.TargetPoss = m.TargetPoss[:0]
 			m.TargetPoss = append(m.TargetPoss, image.Point{
 				X: (col+dcol)*BlockSize + BlockSize/2,
