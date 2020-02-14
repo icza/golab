@@ -260,7 +260,7 @@ func (e *Engine) stepGopher() {
 	}
 
 	// Step Gopher
-	e.stepMovingObj(Gopher)
+	Gopher.step()
 
 	// Check if Gopher reached the exit point
 	if int(m.Gopher.Pos.X) == m.ExitPos.X && int(m.Gopher.Pos.Y) == m.ExitPos.Y {
@@ -319,7 +319,7 @@ func (e *Engine) stepBulldogs() {
 			bd.TargetPos.Y += drow * BlockSize
 		}
 
-		e.stepMovingObj(bd)
+		bd.step()
 
 		if !m.Dead {
 			// Check if this Bulldog reached Gopher (but only if not just won)
@@ -327,31 +327,5 @@ func (e *Engine) stepBulldogs() {
 				m.Dead = true // OK, we just died
 			}
 		}
-	}
-}
-
-// stepMovingObj steps the given MovingObj.
-func (e *Engine) stepMovingObj(m *MovingObj) {
-	x, y := int(m.Pos.X), int(m.Pos.Y)
-
-	// Only horizontal or vertical movement is allowed!
-	if x != m.TargetPos.X {
-		dx := math.Min(dt*v, math.Abs(float64(m.TargetPos.X)-m.Pos.X))
-		if x > m.TargetPos.X {
-			dx = -dx
-			m.Dir = DirLeft
-		} else {
-			m.Dir = DirRight
-		}
-		m.Pos.X += dx
-	} else if y != m.TargetPos.Y {
-		dy := math.Min(dt*v, math.Abs(float64(m.TargetPos.Y)-m.Pos.Y))
-		if y > m.TargetPos.Y {
-			dy = -dy
-			m.Dir = DirUp
-		} else {
-			m.Dir = DirDown
-		}
-		m.Pos.Y += dy
 	}
 }

@@ -5,6 +5,7 @@ package engine
 import (
 	"fmt"
 	"image"
+	"math"
 	"sync"
 )
 
@@ -67,6 +68,32 @@ type MovingObj struct {
 
 	// Target position this object is moving to
 	TargetPos image.Point
+}
+
+// steps steps the MovingObj.
+func (m *MovingObj) step() {
+	x, y := int(m.Pos.X), int(m.Pos.Y)
+
+	// Only horizontal or vertical movement is allowed!
+	if x != m.TargetPos.X {
+		dx := math.Min(dt*v, math.Abs(float64(m.TargetPos.X)-m.Pos.X))
+		if x > m.TargetPos.X {
+			dx = -dx
+			m.Dir = DirLeft
+		} else {
+			m.Dir = DirRight
+		}
+		m.Pos.X += dx
+	} else if y != m.TargetPos.Y {
+		dy := math.Min(dt*v, math.Abs(float64(m.TargetPos.Y)-m.Pos.Y))
+		if y > m.TargetPos.Y {
+			dy = -dy
+			m.Dir = DirUp
+		} else {
+			m.Dir = DirDown
+		}
+		m.Pos.Y += dy
+	}
 }
 
 // Dir represents directions
