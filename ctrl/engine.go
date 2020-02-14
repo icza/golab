@@ -11,8 +11,6 @@ import (
 	"math"
 	"math/rand"
 	"time"
-
-	"github.com/icza/golab/model"
 )
 
 const (
@@ -35,7 +33,7 @@ var (
 
 // Engine calculates and controls the game.
 type Engine struct {
-	Model *model.Model
+	Model *Model
 
 	// command channel to control the engine from other goroutines.
 	cmdChan chan interface{}
@@ -47,24 +45,24 @@ type Engine struct {
 	cfg *GameConfig
 
 	// directions is a reused slice of all directions
-	directions []model.Dir
+	directions []Dir
 }
 
 // NewEngine returns a new Engine.
 // invalidate is a func which will be called by the engine to request a new view frame.
 func NewEngine(invalidate func()) *Engine {
 	e := &Engine{
-		Model: &model.Model{
+		Model: &Model{
 			TargetPoss: make([]image.Point, 0, 20), // cap defines max queueable points
 		},
 		cmdChan:    make(chan interface{}, 10),
 		invalidate: invalidate,
-		directions: make([]model.Dir, model.DirCount),
+		directions: make([]Dir, DirCount),
 	}
 
 	// Populate the directions slice
 	for i := range e.directions {
-		e.directions[i] = model.Dir(i)
+		e.directions[i] = Dir(i)
 	}
 
 	e.initNewGame(&GameConfig{
@@ -170,13 +168,13 @@ func (e *Engine) handleClick(c *Click) {
 
 	if pCol == tCol { // Same column
 		for row, row2 := sorted(pRow, tRow); row <= row2; row++ {
-			if m.Lab[row][tCol] == model.BlockWall {
+			if m.Lab[row][tCol] == BlockWall {
 				return // Wall in the route
 			}
 		}
 	} else if pRow == tRow { // Same row
 		for col, col2 := sorted(pCol, tCol); col <= col2; col++ {
-			if m.Lab[tRow][col] == model.BlockWall {
+			if m.Lab[tRow][col] == BlockWall {
 				return // Wall in the route
 			}
 		}
@@ -199,27 +197,27 @@ func (e *Engine) initNewGame(cfg *GameConfig) {
 
 	// Init the labyrinth
 	m.Rows, m.Cols = cfg.LabSize.rows, cfg.LabSize.cols
-	m.Lab = make([][]model.Block, m.Rows)
+	m.Lab = make([][]Block, m.Rows)
 	for row := range m.Lab {
-		m.Lab[row] = make([]model.Block, m.Cols)
+		m.Lab[row] = make([]Block, m.Cols)
 	}
 	generateLab(m.Lab)
 
 	m.ExitPos.X, m.ExitPos.Y = (m.Cols-2)*BlockSize+BlockSize/2, (m.Rows-2)*BlockSize+BlockSize/2
 
 	// Init Gopher
-	m.Gopher = new(model.MovingObj)
+	m.Gopher = new(MovingObj)
 	m.Gopher.Pos.X = BlockSize + BlockSize/2 // Position Gopher to top left corner
 	m.Gopher.Pos.Y = m.Gopher.Pos.X
-	m.Gopher.Dir = model.DirRight
+	m.Gopher.Dir = DirRight
 	m.Gopher.TargetPos.X = int(m.Gopher.Pos.X)
 	m.Gopher.TargetPos.Y = int(m.Gopher.Pos.Y)
 
 	// Init bulldogs
 	numBulldogs := int(float64(m.Rows*m.Cols) * cfg.Difficulty.bulldogDensity / 1000)
-	m.Bulldogs = make([]*model.MovingObj, numBulldogs)
+	m.Bulldogs = make([]*MovingObj, numBulldogs)
 	for i := range m.Bulldogs {
-		bd := new(model.MovingObj)
+		bd := new(MovingObj)
 		m.Bulldogs[i] = bd
 
 		// Place bulldog at a random position
@@ -297,18 +295,18 @@ func (e *Engine) stepBulldogs() {
 			var drow, dcol int
 			for _, dir := range dirs {
 				switch dir {
-				case model.DirLeft:
+				case DirLeft:
 					dcol = -1
-				case model.DirRight:
+				case DirRight:
 					dcol = 1
-				case model.DirUp:
+				case DirUp:
 					drow = -1
-				case model.DirDown:
+				case DirDown:
 					drow = 1
 				}
-				if m.Lab[row+drow][col+dcol] == model.BlockEmpty {
+				if m.Lab[row+drow][col+dcol] == BlockEmpty {
 					// Direction is good, check if we can even step 2 bocks in this way:
-					if m.Lab[row+drow*2][col+dcol*2] == model.BlockEmpty {
+					if m.Lab[row+drow*2][col+dcol*2] == BlockEmpty {
 						drow *= 2
 						dcol *= 2
 					}
@@ -333,7 +331,7 @@ func (e *Engine) stepBulldogs() {
 }
 
 // stepMovingObj steps the given MovingObj.
-func (e *Engine) stepMovingObj(m *model.MovingObj) {
+func (e *Engine) stepMovingObj(m *MovingObj) {
 	x, y := int(m.Pos.X), int(m.Pos.Y)
 
 	// Only horizontal or vertical movement is allowed!
@@ -341,18 +339,18 @@ func (e *Engine) stepMovingObj(m *model.MovingObj) {
 		dx := math.Min(dt*v, math.Abs(float64(m.TargetPos.X)-m.Pos.X))
 		if x > m.TargetPos.X {
 			dx = -dx
-			m.Dir = model.DirLeft
+			m.Dir = DirLeft
 		} else {
-			m.Dir = model.DirRight
+			m.Dir = DirRight
 		}
 		m.Pos.X += dx
 	} else if y != m.TargetPos.Y {
 		dy := math.Min(dt*v, math.Abs(float64(m.TargetPos.Y)-m.Pos.Y))
 		if y > m.TargetPos.Y {
 			dy = -dy
-			m.Dir = model.DirUp
+			m.Dir = DirUp
 		} else {
-			m.Dir = model.DirDown
+			m.Dir = DirDown
 		}
 		m.Pos.Y += dy
 	}

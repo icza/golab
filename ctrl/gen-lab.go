@@ -2,23 +2,21 @@ package ctrl
 
 import (
 	"math/rand"
-
-	"github.com/icza/golab/model"
 )
 
 // generateLab generates a new, random labyrinth.
 // lab must have odd number of rows and columns.
-func generateLab(lab [][]model.Block) {
+func generateLab(lab [][]Block) {
 	rows, cols := len(lab), len(lab[0])
 
 	// Create a "frame":
 	for row := range lab {
-		lab[row][0] = model.BlockWall
-		lab[row][cols-1] = model.BlockWall
+		lab[row][0] = BlockWall
+		lab[row][cols-1] = BlockWall
 	}
 	for col := range lab[0] {
-		lab[0][col] = model.BlockWall
-		lab[rows-1][col] = model.BlockWall
+		lab[0][col] = BlockWall
+		lab[rows-1][col] = BlockWall
 	}
 
 	genLabArea(lab, 0, 0, rows-1, cols-1)
@@ -26,7 +24,7 @@ func generateLab(lab [][]model.Block) {
 
 // genLabArea generates a random labyrinth inside the specified area, borders exclusive.
 // This is a recursive implementation, each iteration divides the area into 2 parts.
-func genLabArea(lab [][]model.Block, x1, y1, x2, y2 int) {
+func genLabArea(lab [][]Block, x1, y1, x2, y2 int) {
 	dx, dy := x2-x1, y2-y1
 
 	// Exit condition from the recursion:
@@ -56,7 +54,7 @@ func genLabArea(lab [][]model.Block, x1, y1, x2, y2 int) {
 		y := rPassPos(y1, y2)
 		for i := y1; i <= y2; i++ {
 			if i != y {
-				lab[i][x] = model.BlockWall
+				lab[i][x] = BlockWall
 			}
 		}
 
@@ -74,7 +72,7 @@ func genLabArea(lab [][]model.Block, x1, y1, x2, y2 int) {
 		x := rPassPos(x1, x2)
 		for i := x1; i <= x2; i++ {
 			if i != x {
-				lab[y][i] = model.BlockWall
+				lab[y][i] = BlockWall
 			}
 		}
 

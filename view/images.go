@@ -11,7 +11,6 @@ import (
 	"io/ioutil"
 
 	"github.com/icza/golab/ctrl"
-	"github.com/icza/golab/model"
 )
 
 //go:generate go run _generate-embedded-imgs/main.go
@@ -20,16 +19,16 @@ import (
 const useEmbeddedImages = true
 
 // imgGopher holds images of Gopher for each direction, each has zero Min point
-var imgGophers = make([]*image.RGBA, model.DirCount)
+var imgGophers = make([]*image.RGBA, ctrl.DirCount)
 
 // imgDead is the Dead Gopher image.
 var imgDead *image.RGBA
 
 // imgBulldog holds images of a Bulldog for each direction, each has zero Min point
-var imgBulldogs = make([]*image.RGBA, model.DirCount)
+var imgBulldogs = make([]*image.RGBA, ctrl.DirCount)
 
 // imgBlocks holds images of labyrinth blocks for each type, each has zero Min point
-var imgBlocks = make([]image.Image, model.BlockCount)
+var imgBlocks = make([]image.Image, ctrl.BlockCount)
 
 // imgMarker is the image of the path marker
 var imgMarker *image.RGBA
@@ -41,15 +40,15 @@ var imgExit *image.RGBA
 var imgWon *image.RGBA
 
 func init() {
-	for dir := model.Dir(0); dir < model.DirCount; dir++ {
+	for dir := ctrl.Dir(0); dir < ctrl.DirCount; dir++ {
 		// Load Gopher images
 		imgGophers[dir] = loadImg(fmt.Sprintf("gopher-%s.png", dir), true)
 		// Load Bulldog images
 		imgBulldogs[dir] = loadImg(fmt.Sprintf("bulldog-%s.png", dir), true)
 	}
 
-	imgBlocks[model.BlockEmpty] = image.NewUniform(color.RGBA{A: 0xff})
-	imgBlocks[model.BlockWall] = loadImg("wall.png", true)
+	imgBlocks[ctrl.BlockEmpty] = image.NewUniform(color.RGBA{A: 0xff})
+	imgBlocks[ctrl.BlockWall] = loadImg("wall.png", true)
 	imgDead = loadImg("gopher-dead.png", true)
 	imgExit = loadImg("door.png", true)
 

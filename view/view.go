@@ -20,7 +20,6 @@ import (
 	"gioui.org/widget"
 	"gioui.org/widget/material"
 	"github.com/icza/golab/ctrl"
-	"github.com/icza/golab/model"
 )
 
 const (
@@ -285,7 +284,7 @@ func (v *View) drawLab() {
 }
 
 // drawObj draws the given image of the given moving obj.
-func (v *View) drawObj(iop imageOp, obj *model.MovingObj) {
+func (v *View) drawObj(iop imageOp, obj *ctrl.MovingObj) {
 	v.drawImg(iop, float32(obj.Pos.X-ctrl.BlockSize/2), float32(obj.Pos.Y-ctrl.BlockSize/2))
 }
 

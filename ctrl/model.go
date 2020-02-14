@@ -1,5 +1,6 @@
-// Package model contains types modeling the game.
-package model
+// This file contains models of the game.
+
+package ctrl
 
 import (
 	"fmt"
