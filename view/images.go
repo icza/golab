@@ -10,7 +10,7 @@ import (
 	"image/png"
 	"io/ioutil"
 
-	"github.com/icza/golab/ctrl"
+	"github.com/icza/golab/engine"
 )
 
 //go:generate go run _generate-embedded-imgs/main.go
@@ -19,16 +19,16 @@ import (
 const useEmbeddedImages = true
 
 // imgGopher holds images of Gopher for each direction, each has zero Min point
-var imgGophers = make([]*image.RGBA, ctrl.DirCount)
+var imgGophers = make([]*image.RGBA, engine.DirCount)
 
 // imgDead is the Dead Gopher image.
 var imgDead *image.RGBA
 
 // imgBulldog holds images of a Bulldog for each direction, each has zero Min point
-var imgBulldogs = make([]*image.RGBA, ctrl.DirCount)
+var imgBulldogs = make([]*image.RGBA, engine.DirCount)
 
 // imgBlocks holds images of labyrinth blocks for each type, each has zero Min point
-var imgBlocks = make([]image.Image, ctrl.BlockCount)
+var imgBlocks = make([]image.Image, engine.BlockCount)
 
 // imgMarker is the image of the path marker
 var imgMarker *image.RGBA
@@ -40,15 +40,15 @@ var imgExit *image.RGBA
 var imgWon *image.RGBA
 
 func init() {
-	for dir := ctrl.Dir(0); dir < ctrl.DirCount; dir++ {
+	for dir := engine.Dir(0); dir < engine.DirCount; dir++ {
 		// Load Gopher images
 		imgGophers[dir] = loadImg(fmt.Sprintf("gopher-%s.png", dir), true)
 		// Load Bulldog images
 		imgBulldogs[dir] = loadImg(fmt.Sprintf("bulldog-%s.png", dir), true)
 	}
 
-	imgBlocks[ctrl.BlockEmpty] = image.NewUniform(color.RGBA{A: 0xff})
-	imgBlocks[ctrl.BlockWall] = loadImg("wall.png", true)
+	imgBlocks[engine.BlockEmpty] = image.NewUniform(color.RGBA{A: 0xff})
+	imgBlocks[engine.BlockWall] = loadImg("wall.png", true)
 	imgDead = loadImg("gopher-dead.png", true)
 	imgExit = loadImg("door.png", true)
 
@@ -84,7 +84,7 @@ func decodeImg(data []byte, blockSize bool) *image.RGBA {
 
 	// Convert to image.RGBA, also make sure result image has zero Min point
 	b := src.Bounds()
-	if blockSize && (b.Dx() != ctrl.BlockSize || b.Dy() != ctrl.BlockSize) {
+	if blockSize && (b.Dx() != engine.BlockSize || b.Dy() != engine.BlockSize) {
 		panic("Invalid image size!")
 	}
 

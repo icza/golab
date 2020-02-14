@@ -1,4 +1,4 @@
-package ctrl
+package engine
 
 // Difficulty of the game.
 type Difficulty struct {

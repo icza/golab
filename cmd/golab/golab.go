@@ -3,7 +3,7 @@ package main
 import (
 	"gioui.org/app"
 	"gioui.org/unit"
-	"github.com/icza/golab/ctrl"
+	"github.com/icza/golab/engine"
 	"github.com/icza/golab/view"
 )
 
@@ -14,10 +14,10 @@ func main() {
 			app.Size(unit.Px(view.WindowWidth), unit.Px(view.WindowHeight)),
 		)
 
-		engine := ctrl.NewEngine(w.Invalidate)
-		go engine.Loop()
+		eng := engine.NewEngine(w.Invalidate)
+		go eng.Loop()
 
-		v := view.New(engine, w)
+		v := view.New(eng, w)
 		v.Loop()
 	}()
 

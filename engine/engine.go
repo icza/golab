@@ -1,9 +1,9 @@
-// Package ctrl contains the game logic.
+// Package engine is the game engien: it contains the game model and game logic.
 //
 // The engine's Loop() method should be launched as a goroutine,
 // and it can be controlled with opaque commands safely from other
 // goroutines.
-package ctrl
+package engine
 
 import (
 	"image"

@@ -19,7 +19,7 @@ import (
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
-	"github.com/icza/golab/ctrl"
+	"github.com/icza/golab/engine"
 )
 
 const (
@@ -51,7 +51,7 @@ func newImageOp(src image.Image) imageOp {
 
 // View displays the game window and handles user input.
 type View struct {
-	engine *ctrl.Engine
+	engine *engine.Engine
 	w      *app.Window
 	th     *material.Theme
 	gtx    *layout.Context
@@ -88,9 +88,9 @@ type View struct {
 }
 
 // New returns a new View.
-func New(engine *ctrl.Engine, w *app.Window) *View {
+func New(eng *engine.Engine, w *app.Window) *View {
 	v := &View{
-		engine:      engine,
+		engine:      eng,
 		w:           w,
 		th:          material.NewTheme(),
 		gtx:         layout.NewContext((w.Queue())),
@@ -108,9 +108,9 @@ func New(engine *ctrl.Engine, w *app.Window) *View {
 		v.imgOpBulldogs = append(v.imgOpBulldogs, newImageOp(img))
 	}
 
-	v.diffOpt = newOptions(v, "Difficulty", ctrl.Difficulties, ctrl.DifficultyDefaultIdx)
-	v.labSizeOpt = newOptions(v, "Lab size", ctrl.LabSizes, ctrl.LabSizeDefaultIdx)
-	v.speedOpt = newOptions(v, "Speed", ctrl.Speeds, ctrl.SpeedDefaultIdx)
+	v.diffOpt = newOptions(v, "Difficulty", engine.Difficulties, engine.DifficultyDefaultIdx)
+	v.labSizeOpt = newOptions(v, "Lab size", engine.LabSizes, engine.LabSizeDefaultIdx)
+	v.speedOpt = newOptions(v, "Speed", engine.Speeds, engine.SpeedDefaultIdx)
 
 	return v
 }
@@ -131,7 +131,7 @@ func (v *View) Loop() {
 				if pos.X >= r.Min.X && pos.X < r.Max.X &&
 					pos.Y >= r.Min.Y && pos.Y < r.Max.Y {
 					// TODO if e.Source == pointer.Touch, set left button?
-					v.engine.SendClick(ctrl.Click{
+					v.engine.SendClick(engine.Click{
 						X:     int(pos.X),
 						Y:     int(pos.Y),
 						Left:  e.Buttons&pointer.ButtonLeft != 0,
@@ -153,10 +153,10 @@ func (v *View) drawFrame(e system.FrameEvent) {
 
 	// Handle button clicks
 	for v.newGameBtn.Clicked(v.gtx) {
-		v.engine.NewGame(ctrl.GameConfig{
-			Difficulty: v.diffOpt.selected().(*ctrl.Difficulty),
-			LabSize:    v.labSizeOpt.selected().(*ctrl.LabSize),
-			Speed:      v.speedOpt.selected().(*ctrl.Speed),
+		v.engine.NewGame(engine.GameConfig{
+			Difficulty: v.diffOpt.selected().(*engine.Difficulty),
+			LabSize:    v.labSizeOpt.selected().(*engine.LabSize),
+			Speed:      v.speedOpt.selected().(*engine.Speed),
 		})
 	}
 	v.diffOpt.handleInput()
@@ -216,8 +216,8 @@ func (v *View) drawLab() {
 
 	// Center lab view in window:
 	displayWidth, displayHeight := float32(viewWidth), float32(viewHeight)
-	labWidth := float32(m.Cols * ctrl.BlockSize)
-	labHeight := float32(m.Rows * ctrl.BlockSize)
+	labWidth := float32(m.Cols * engine.BlockSize)
+	labHeight := float32(m.Rows * engine.BlockSize)
 	if labWidth < displayWidth {
 		displayWidth = labWidth
 	}
@@ -284,8 +284,8 @@ func (v *View) drawLab() {
 }
 
 // drawObj draws the given image of the given moving obj.
-func (v *View) drawObj(iop imageOp, obj *ctrl.MovingObj) {
-	v.drawImg(iop, float32(obj.Pos.X-ctrl.BlockSize/2), float32(obj.Pos.Y-ctrl.BlockSize/2))
+func (v *View) drawObj(iop imageOp, obj *engine.MovingObj) {
+	v.drawImg(iop, float32(obj.Pos.X-engine.BlockSize/2), float32(obj.Pos.Y-engine.BlockSize/2))
 }
 
 // drawImg draws the given image to the given position.
@@ -312,14 +312,14 @@ func (v *View) ensureLabImgOp() {
 		return
 	}
 
-	labImg := image.NewRGBA(image.Rect(0, 0, m.Cols*ctrl.BlockSize, m.Rows*ctrl.BlockSize))
+	labImg := image.NewRGBA(image.Rect(0, 0, m.Cols*engine.BlockSize, m.Rows*engine.BlockSize))
 	var r image.Rectangle
 	for row := range m.Lab {
-		r.Min.Y = row * ctrl.BlockSize
-		r.Max.Y = r.Min.Y + ctrl.BlockSize
+		r.Min.Y = row * engine.BlockSize
+		r.Max.Y = r.Min.Y + engine.BlockSize
 		for col, block := range m.Lab[row] {
-			r.Min.X = col * ctrl.BlockSize
-			r.Max.X = r.Min.X + ctrl.BlockSize
+			r.Min.X = col * engine.BlockSize
+			r.Max.X = r.Min.X + engine.BlockSize
 			src := imgBlocks[block]
 			draw.Draw(labImg, r, src, image.Point{}, draw.Over)
 		}
@@ -327,8 +327,8 @@ func (v *View) ensureLabImgOp() {
 
 	// Exit sign:
 	r.Min = m.ExitPos
-	r.Min = r.Min.Add(image.Point{-ctrl.BlockSize / 2, -ctrl.BlockSize / 2})
-	r.Max = r.Min.Add(image.Point{ctrl.BlockSize, ctrl.BlockSize})
+	r.Min = r.Min.Add(image.Point{-engine.BlockSize / 2, -engine.BlockSize / 2})
+	r.Max = r.Min.Add(image.Point{engine.BlockSize, engine.BlockSize})
 	draw.Draw(labImg, r, imgExit, image.Point{}, draw.Over)
 
 	v.labImgOp = newImageOp(labImg)

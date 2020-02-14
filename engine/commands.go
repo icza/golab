@@ -1,4 +1,4 @@
-package ctrl
+package engine
 
 // GameConfig holds config to start a new game.
 type GameConfig struct {

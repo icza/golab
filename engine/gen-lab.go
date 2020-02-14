@@ -1,4 +1,4 @@
-package ctrl
+package engine
 
 import (
 	"math/rand"

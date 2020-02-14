@@ -1,6 +1,6 @@
 // This file contains models of the game.
 
-package ctrl
+package engine
 
 import (
 	"fmt"

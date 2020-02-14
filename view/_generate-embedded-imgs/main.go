@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"go/format"
 	"io/ioutil"
+
+	"github.com/icza/golab/engine"
 )
 
 func main() {
@@ -23,7 +25,7 @@ var base64Imgs = map[string]string{
 `)
 
 	var names []string
-	for dir := ctrl.Dir(0); dir < ctrl.DirCount; dir++ {
+	for dir := engine.Dir(0); dir < engine.DirCount; dir++ {
 		// Gopher images
 		names = append(names, fmt.Sprintf("gopher-%s.png", dir))
 		// Bulldog images
