@@ -154,6 +154,18 @@ func (v *View) Loop() {
 			case key.NameDownArrow:
 				sendKey(engine.DirDown)
 			}
+			if e.Modifiers&key.ModAlt != 0 {
+				switch e.Name {
+				case "N":
+					v.sendNewGame()
+				case "D":
+					v.diffOpt.onClick()
+				case "L":
+					v.labSizeOpt.onClick()
+				case "S":
+					v.speedOpt.onClick()
+				}
+			}
 		case system.DestroyEvent:
 			log.Println("Goodbye!")
 		}
@@ -168,11 +180,7 @@ func (v *View) drawFrame(e system.FrameEvent) {
 
 	// Handle button clicks
 	for v.newGameBtn.Clicked(v.gtx) {
-		v.engine.NewGame(engine.GameConfig{
-			Difficulty: v.diffOpt.selected().(*engine.Difficulty),
-			LabSize:    v.labSizeOpt.selected().(*engine.LabSize),
-			Speed:      v.speedOpt.selected().(*engine.Speed),
-		})
+		v.sendNewGame()
 	}
 	v.diffOpt.handleInput()
 	v.labSizeOpt.handleInput()
@@ -182,6 +190,15 @@ func (v *View) drawFrame(e system.FrameEvent) {
 	v.drawLab()
 
 	e.Frame(gtx.Ops)
+}
+
+// sendNewGame sends a new game command to the engine.
+func (v *View) sendNewGame() {
+	v.engine.NewGame(engine.GameConfig{
+		Difficulty: v.diffOpt.selected().(*engine.Difficulty),
+		LabSize:    v.labSizeOpt.selected().(*engine.LabSize),
+		Speed:      v.speedOpt.selected().(*engine.Speed),
+	})
 }
 
 // drawControls draws the control and setup widgets.

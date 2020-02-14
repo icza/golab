@@ -38,8 +38,13 @@ func newOptions(v *View, title string, values interface{}, defaultIdx int) *opti
 // handleInput handles user inputs that may change the selected option.
 func (o *options) handleInput() {
 	for o.btn.Clicked(o.v.gtx) {
-		o.idx = (o.idx + 1) % reflect.ValueOf(o.values).Len()
+		o.onClick()
 	}
+}
+
+// onClick does the job needed when the option is clicked: rotates the selected option.
+func (o *options) onClick() {
+	o.idx = (o.idx + 1) % reflect.ValueOf(o.values).Len()
 }
 
 // selected returns the selected item.
