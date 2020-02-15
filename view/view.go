@@ -67,6 +67,9 @@ type View struct {
 	// Speed options
 	speedOpt *options
 
+	// Height of controls in pixels
+	controlsHeightPx int
+
 	// "static" imageOps
 	imgOpGophers  []imageOp
 	imgOpDead     imageOp
@@ -220,6 +223,7 @@ func (v *View) drawControls() {
 				layout.Rigid(v.speedOpt.layout),
 			)
 		})
+		v.controlsHeightPx = gtx.Dimensions.Size.Y
 	})
 }
 
@@ -283,7 +287,7 @@ func (v *View) drawLab() {
 
 	v.labViewOffset = f32.Point{
 		X: (float32(gtx.Constraints.Width.Max) - displayWidth) / 2,
-		Y: controlsHeight,
+		Y: float32(v.controlsHeightPx),
 	}.Sub(rect.Min)
 	op.TransformOp{}.Offset(v.labViewOffset).Add(gtx.Ops)
 	v.labViewClip = rect
