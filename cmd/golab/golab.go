@@ -11,7 +11,7 @@ func main() {
 	go func() {
 		w := app.NewWindow(
 			app.Title("Gopher's Labyrinth"),
-			app.Size(unit.Px(view.WindowWidth), unit.Px(view.WindowHeight)),
+			app.Size(unit.Px(view.WindowWidthPx), unit.Px(view.WindowHeightPx)),
 		)
 
 		eng := engine.NewEngine(w.Invalidate)

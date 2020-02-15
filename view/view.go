@@ -24,13 +24,13 @@ import (
 )
 
 const (
-	controlsHeight = 50
-	viewWidth      = 700
-	viewHeight     = 700
-	// WindowWidth is the suggested window width
-	WindowWidth = viewWidth
-	// WindowHeight is the suggested window height
-	WindowHeight = controlsHeight + viewHeight
+	controlsHeightPx = 70
+	viewWidthPx      = 700
+	viewHeightPx     = 700
+	// WindowWidthPx is the suggested window width
+	WindowWidthPx = viewWidthPx
+	// WindowHeightPx is the suggested window height
+	WindowHeightPx = controlsHeightPx + viewHeightPx
 )
 
 func init() {
@@ -251,7 +251,7 @@ func (v *View) drawLab() {
 	defer stack.Pop()
 
 	// Center lab view in window:
-	displayWidth, displayHeight := float32(viewWidth), float32(viewHeight)
+	displayWidth, displayHeight := float32(viewWidthPx), float32(viewHeightPx)
 	labWidth := float32(m.Cols * engine.BlockSize)
 	labHeight := float32(m.Rows * engine.BlockSize)
 	if labWidth < displayWidth {
