@@ -14,7 +14,7 @@ Controlling Gopher is very easy: just click with your left mouse button to where
 (there must be a free straight line to it). You may queue multiple target points forming a path.
 Right click clears the path. You may also use the arrow keys on your keyboard.
 
-You may try out the game in your browser here: _Coming soon..._
+You may try out the game in your browser if it supports WebAssembly and WebGL here: https://icza.github.io/golab/
 
 ![Screenshot](https://raw.githubusercontent.com/icza/golab/master/screenshot-golab.png)
 
@@ -35,6 +35,7 @@ And then run GoLab with:
 
     go run github.com/icza/golab/cmd/golab
 
+Or try it in your browser:  https://icza.github.io/golab/
 
 ## LICENSE
 
