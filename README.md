@@ -44,4 +44,4 @@ See [LICENSE](https://github.com/icza/golab/blob/master/LICENSE).
 GoLab's Gopher is a derivative work based on the Go gopher which was designed by Renee French. (http://reneefrench.blogspot.com/).
 Licensed under the Creative Commons 3.0 Attributions license.
 
-The source of other images can be found in the [_images_/source.txt](https://github.com/icza/golab/blob/master/_images/source.txt) file.
+The source of other images can be found in the [\_images_/source.txt](https://github.com/icza/golab/blob/master/_images/source.txt) file.
