@@ -2,6 +2,7 @@
 package view
 
 import (
+	"fmt"
 	"image"
 	"image/color"
 	"image/draw"
@@ -9,7 +10,8 @@ import (
 
 	"gioui.org/app"
 	"gioui.org/f32"
-	"gioui.org/font/gofont"
+	"gioui.org/font"
+	"gioui.org/font/opentype"
 	"gioui.org/io/key"
 	"gioui.org/io/pointer"
 	"gioui.org/io/system"
@@ -17,10 +19,12 @@ import (
 	"gioui.org/op"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
+	"gioui.org/text"
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
 	"github.com/icza/golab/engine"
+	"golang.org/x/image/font/gofont/goregular"
 )
 
 const (
@@ -34,7 +38,20 @@ const (
 )
 
 func init() {
-	gofont.Register()
+	// We only need font for buttons. gofont.Register() would do it,
+	// but it registers all kinds of variants (like italic, mono, smallcaps etc.)
+	// that we don't use, and they increase the output binary with almost 2MB.
+	// So register only the the regular gofont:
+	// gofont.Register()
+	register := func(fnt text.Font, ttf []byte) {
+		face, err := opentype.Parse(ttf)
+		if err != nil {
+			panic(fmt.Sprintf("failed to parse font: %v", err))
+		}
+		fnt.Typeface = "Go"
+		font.Register(fnt, face)
+	}
+	register(text.Font{}, goregular.TTF)
 }
 
 // imageOp wraps a paint.ImageOp and the source image.
